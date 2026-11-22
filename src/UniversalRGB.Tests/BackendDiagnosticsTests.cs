@@ -149,8 +149,19 @@ public class MsiBoardClassificationTests
         var board = Classify(new BackendFindings { MsiMysticLight = BoardControllerIssue.FirmwareTooOld }).Single(e => e.Category == "Motherboard");
         Assert.Equal(DeviceStatus.SetupRequired, board.Status);
         Assert.Contains("fans", board.StatusDetail);
-        Assert.Contains("LED Firmware", board.NextStep);
-        Assert.StartsWith("https://www.msi.com/", board.HelpUrl);
+        Assert.Contains("Support → Live Update", board.NextStep);
+        Assert.Contains("LED FW Update", board.NextStep);
+        Assert.StartsWith("https://download.msi.com/", board.HelpUrl);
+    }
+
+    [Fact]
+    public void Old_firmware_is_reported_even_while_an_msi_app_is_running()
+    {
+        var board = Classify(new BackendFindings { MsiMysticLight = BoardControllerIssue.FirmwareTooOld },
+                new RunningConflict("MSI Mystic Light", "LEDKeeper2", ["1462"]))
+            .Single(e => e.Category == "Motherboard");
+        Assert.Equal(DeviceStatus.SetupRequired, board.Status);
+        Assert.Contains("firmware", board.StatusDetail);
     }
 
     [Fact]
@@ -164,12 +175,12 @@ public class MsiBoardClassificationTests
     }
 
     [Fact]
-    public void Running_msi_center_is_reported_as_the_conflict()
+    public void Running_mystic_light_is_reported_as_the_conflict()
     {
-        var board = Classify(new BackendFindings(), new RunningConflict("MSI Center / Mystic Light", "MSI.CentralServer", ["1462"]))
+        var board = Classify(new BackendFindings(), new RunningConflict("MSI Mystic Light", "LEDKeeper2", ["1462"]))
             .Single(e => e.Category == "Motherboard");
         Assert.Equal(DeviceStatus.ConflictDetected, board.Status);
-        Assert.Contains("MSI Center", board.StatusDetail);
+        Assert.Contains("MSI Mystic Light is running (LEDKeeper2)", board.StatusDetail);
     }
 
     [Fact]

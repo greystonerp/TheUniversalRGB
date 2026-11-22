@@ -82,7 +82,8 @@
                     <CheckBox Content="Install updates automatically (signed releases from GitHub)" IsChecked="{Binding AutoUpdate}" Margin="0,14,0,0"/>
                     <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
                         <Button Content="Install update" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" Command="{Binding InstallUpdateCommand}"
-                                Visibility="{Binding Updates.IsUpdateAvailable, Converter={StaticResource BoolToVis}}"/>
+                                Visibility="{Binding Updates.IsUpdateAvailable, Converter={StaticResource BoolToVis}}"
+                                IsEnabled="{Binding Updates.IsBusy, Converter={StaticResource Not}}"/>
                         <Button Content="Check now" Margin="0,0,8,0" Command="{Binding CheckForUpdatesCommand}"
                                 IsEnabled="{Binding Updates.IsBusy, Converter={StaticResource Not}}"/>
                         <Button Content="Release notes" Style="{StaticResource GhostButton}" Command="{Binding OpenReleasesCommand}"/>

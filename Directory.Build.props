@@ -3,7 +3,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <Version>0.6.2</Version>
+    <Version>0.6.3</Version>
     <Company>Universal RGB Control</Company>
     <Product>Universal RGB Control</Product>
     <Copyright>Universal RGB Control</Copyright>

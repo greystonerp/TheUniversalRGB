@@ -399,6 +399,20 @@ public class DriverSafetyTests
     }
 
     [Fact]
+    public void Msi_center_services_only_count_when_mystic_light_is_installed()
+    {
+        // MSI Center's core services start with Windows even when the Mystic Light feature is not installed.
+        var services = new HashSet<string>(["MSI.CentralServer", "MSI_Central_Service", "MSI.TerminalServer", "MSI.NotifyServer"], StringComparer.OrdinalIgnoreCase);
+        Assert.Empty(ConflictDetector.Match(services, _ => false));
+
+        var withFeature = ConflictDetector.Match(services, dir => dir.EndsWith(Path.Combine("MSI Center", "Mystic Light"), StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(withFeature, c => c.DisplayName == "MSI Center with Mystic Light" && c.Affects("1462"));
+
+        var mysticLight = ConflictDetector.Match(new HashSet<string>(["ledkeeper2"], StringComparer.OrdinalIgnoreCase), _ => false);
+        Assert.Contains(mysticLight, c => c.DisplayName == "MSI Mystic Light" && c.ProcessName == "LEDKeeper2");
+    }
+
+    [Fact]
     public void Authenticode_codes_are_interpreted()
     {
         Assert.Equal(SignatureState.NotSigned, AuthenticodeVerifier.Interpret(0x800B0100).Item1);

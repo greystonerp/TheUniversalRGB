@@ -253,21 +253,23 @@ public static class DeviceClassifier
             var label = $"{DisplayName(controller)}, USB {controllerKey}";
             var conflict = env.Conflicts.FirstOrDefault(c => c.Affects(controller.Identity?.VendorId));
             var issue = IsMsi(system) ? env.Findings?.MsiMysticLight ?? BoardControllerIssue.None : BoardControllerIssue.None;
-            if (conflict is not null)
-            {
-                status = DeviceStatus.ConflictDetected;
-                detail = $"{conflict.DisplayName} is running and is probably holding the board's lighting controller ({label}).";
-                next = $"Close {conflict.DisplayName} (or remove its lighting component), then press Restart OpenRGB on the Drivers page.";
-            }
-            else if (issue == BoardControllerIssue.FirmwareTooOld)
+            // OpenRGB reading the firmware version proves the controller answered, so that finding wins over a running app.
+            if (issue == BoardControllerIssue.FirmwareTooOld)
             {
                 status = DeviceStatus.SetupRequired;
                 detail = $"The board's lighting controller ({label}) runs LED firmware older than OpenRGB supports, so the onboard lights " +
                          "and the fans or strips on its RGB headers cannot be controlled yet.";
-                next = "Update the LED firmware with MSI Center → Live Update → Advanced scan → LED Firmware (separate from the BIOS). " +
-                       "Restart Windows, close MSI Center, then press Restart OpenRGB on the Drivers page and set the LED count for each header.";
-                helpUrl = "https://www.msi.com/faq/8638";
-                helpLabel = "MSI guide: updating the LED firmware";
+                next = "Update the LED firmware (separate from the BIOS): in MSI Center open Support → Live Update, press Advanced, scan, " +
+                       "then install the \"LED FW Update\" it finds and follow its prompts (it asks you to shut down and switch the power supply " +
+                       "off for a minute). Afterwards press Restart OpenRGB on the Drivers page and set the LED count for each header.";
+                helpUrl = "https://download.msi.com/archive/mnu_exe/mb/MSI-Center-Update-LED-Firmware.pdf";
+                helpLabel = "MSI guide: update the LED firmware";
+            }
+            else if (conflict is not null)
+            {
+                status = DeviceStatus.ConflictDetected;
+                detail = $"{conflict.DisplayName} is running ({conflict.ProcessName}) and is probably holding the board's lighting controller ({label}).";
+                next = $"Close {conflict.DisplayName} (or remove its lighting component), then press Restart OpenRGB on the Drivers page.";
             }
             else if (issue == BoardControllerIssue.NoResponse)
             {

@@ -156,6 +156,7 @@ public sealed partial class UpdateManager : ObservableObject, IDisposable
         }
         else if (CanInstall && _center.Services.Settings.AutoUpdate)
         {
+            _log.Info("Window is hidden; installing the update automatically.");
             await InstallAsync();
         }
         else
@@ -193,23 +194,28 @@ public sealed partial class UpdateManager : ObservableObject, IDisposable
 
         _working = true;
         IsBusy = true;
+        var handedOff = false;
+        var version = release.Version.ToString(3);
         try
         {
             var progress = new Progress<DownloadProgress>(p => Status = p.Fraction is { } f
-                ? $"Downloading version {release.Version.ToString(3)}… {f:P0}"
-                : $"Downloading version {release.Version.ToString(3)}…");
+                ? $"Downloading version {version}… {f:P0}"
+                : $"Downloading version {version}…");
             var setup = await _client.DownloadAsync(release, progress, CancellationToken.None);
             if (!_client.VerifyDownloaded(setup))
             {
                 throw new InvalidDataException("The downloaded update failed its final signature check.");
             }
 
-            Status = $"Installing version {release.Version.ToString(3)}…";
-            _center.Notify($"Updating Universal RGB to {release.Version.ToString(3)}. It will reopen in a few seconds.", ToastKind.Info);
+            Status = $"Installing version {version}…";
+            _center.Notify($"Updating Universal RGB to {version}. It will reopen in a few seconds.", ToastKind.Info);
             await Task.Delay(2500);
 
             // The setup asks this copy to close, replaces it and reopens the installed app with --updated.
             Process.Start(new ProcessStartInfo(setup) { UseShellExecute = true, Arguments = "--updated" });
+            handedOff = true;
+            Status = $"Installing version {version}. Universal RGB reopens in a few seconds.";
+            _ = UnlockIfStillRunningAsync(version);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException or InvalidDataException
                                        or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
@@ -220,9 +226,23 @@ public sealed partial class UpdateManager : ObservableObject, IDisposable
         }
         finally
         {
-            _working = false;
-            IsBusy = false;
+            // Once the setup is running, stay locked so another check or click cannot start a second download and
+            // setup in the moment before this copy is closed.
+            if (!handedOff)
+            {
+                _working = false;
+                IsBusy = false;
+            }
         }
+    }
+
+    /// <summary>The setup normally closes this copy within seconds. If it did not (e.g. it was closed), allow another try.</summary>
+    private async Task UnlockIfStillRunningAsync(string version)
+    {
+        await Task.Delay(TimeSpan.FromMinutes(2));
+        _working = false;
+        IsBusy = false;
+        Status = $"Version {version} was not installed. Use Install update to try again.";
     }
 
     /// <summary>The "Update available" popup (shown at most once per release per session unless the user asked).</summary>
@@ -235,6 +255,7 @@ public sealed partial class UpdateManager : ObservableObject, IDisposable
 
         _offeredTag = release.Tag;
         var version = release.Version.ToString(3);
+        _log.Info($"Offering update {release.Tag}.");
         var notes = UpdateClient.SummarizeNotes(release.Notes);
         var message = $"Universal RGB {version} is ready. You have version {CurrentVersion}."
             + (notes.Length > 0 ? $"\n\nWhat's new:\n{notes}" : "");

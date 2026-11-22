@@ -56,8 +56,8 @@ You can also press **Install missing** on the Drivers page at any time.
 
 - **SMBus blocked.** RGB memory (for example Corsair Vengeance RGB `CMH…`) is hidden when OpenRGB runs without administrator rights, because it then can't open PawnIO. When the app sees RGB memory affected this way, it offers once to **Run OpenRGB as administrator**. Windows then asks each time OpenRGB starts, and the choice is remembered.
 - **Board lighting controller.** Each board is shown together with its own USB lighting controller (MSI Mystic Light `1462:7Cxx`, ASUS Aura, Gigabyte RGB Fusion 2, ASRock Polychrome). The app explains which of these happened:
-  - The controller's LED firmware is too old (for example MSI MPG B550 GAMING PLUS below firmware 6). Update it with MSI Center → Live Update → Advanced scan → LED Firmware; this is separate from the BIOS. Then restart and press **Restart OpenRGB**.
-  - It didn't answer OpenRGB. MSI Center / Mystic Light is usually holding it: close it, then press **Restart OpenRGB**.
+  - The controller's LED firmware is too old (for example MSI MPG B550 GAMING PLUS below firmware 6). Update it in MSI Center → Support → Live Update → **Advanced** → scan → install **LED FW Update** ([MSI guide](https://download.msi.com/archive/mnu_exe/mb/MSI-Center-Update-LED-Firmware.pdf)); this is separate from the BIOS. Then press **Restart OpenRGB**.
+  - It didn't answer OpenRGB. MSI's Mystic Light (`LEDKeeper2`, `LightKeeperService`) is usually holding it: close it, then press **Restart OpenRGB**. MSI Center's own background services only count as a conflict when its Mystic Light feature is installed.
   - OpenRGB has no lighting layout for that board.
 
 After the first connection:
