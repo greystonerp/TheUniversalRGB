@@ -14,7 +14,7 @@
     <!-- WPF declares per-monitor DPI awareness in app.manifest; WinForms is only used for the tray icon. -->
     <NoWarn>$(NoWarn);WFO0003</NoWarn>
     <!-- GitHub repository whose Releases deliver signed updates. -->
-    <UpdateRepository>greystonerp/UniversalRGB</UpdateRepository>
+    <UpdateRepository>greystonerp/TheUniversalRGB</UpdateRepository>
   </PropertyGroup>
 
   <ItemGroup>

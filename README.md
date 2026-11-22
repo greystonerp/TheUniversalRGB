@@ -20,12 +20,12 @@ To run without installing, start the EXE with `--portable`.
 
 ### Automatic updates
 
-The installed app checks [GitHub Releases](https://github.com/greystonerp/UniversalRGB/releases) 20 seconds after it starts, then every 6 hours. When there's a newer version:
+The installed app checks [GitHub Releases](https://github.com/greystonerp/TheUniversalRGB/releases) a few seconds after it starts, then every 6 hours. When there's a newer version and the window is open, a popup offers **Update now** or **Later**; when the app runs quietly in the tray, it updates itself. Each update:
 
-1. It downloads `UniversalRGB-Setup.exe` together with its `.sig` signature file.
-2. It checks the file against the SHA-256 that GitHub publishes.
-3. It verifies the signature against the release public key built into the app (ECDSA P-256).
-4. Only if both checks pass does it run the setup, which closes the app, replaces it, and reopens it with an "updated" message.
+1. Downloads `UniversalRGB-Setup.exe` together with its `.sig` signature file.
+2. Checks the file against the SHA-256 that GitHub publishes.
+3. Verifies the signature against the release public key built into the app (ECDSA P-256).
+4. Only if both checks pass, runs the setup, which closes the app, replaces it, and reopens it with an "updated" message.
 
 If anything fails to verify, the download is deleted and nothing is installed.
 
