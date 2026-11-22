@@ -158,7 +158,8 @@ public partial class App : Application
         }
 
         _center = new ControlCenter(_services, Dispatcher);
-        _updates = new UpdateManager(_center, log, Path.Combine(paths.Packages, "updates"));
+        _updates = new UpdateManager(_center, log, Path.Combine(paths.Packages, "updates"),
+            () => _window is { IsVisible: true } w && w.WindowState != WindowState.Minimized);
         var main = new MainViewModel(_center, _updates);
         _window = new MainWindow(main, _services.Settings);
         MainWindow = _window;
@@ -230,6 +231,7 @@ public partial class App : Application
             return;
         }
 
+        var wasHidden = !_window.IsVisible || _window.WindowState == WindowState.Minimized;
         if (!_window.IsVisible)
         {
             _window.Show();
@@ -244,6 +246,12 @@ public partial class App : Application
         _window.Topmost = true;
         _window.Topmost = false;
         _window.Focus();
+
+        // Reopened from the tray (or a second launch): offer a pending update.
+        if (wasHidden)
+        {
+            _updates?.OnWindowShown();
+        }
     }
 
     private async void ExitApplication()

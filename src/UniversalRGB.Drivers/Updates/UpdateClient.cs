@@ -16,7 +16,11 @@ public sealed record ReleaseInfo(
     string SetupUrl,
     string SignatureUrl,
     long SetupSize,
-    string? SetupSha256);
+    string? SetupSha256)
+{
+    /// <summary>False while a release is still being published (its installer or signature is not attached yet).</summary>
+    public bool IsComplete => SetupUrl.Length > 0 && SignatureUrl.Length > 0;
+}
 
 /// <summary>
 /// Checks the project's GitHub Releases for a newer version and downloads it. A download is accepted only when
@@ -107,10 +111,9 @@ public sealed partial class UpdateClient : IDisposable
             }
         }
 
-        if (setupUrl is null || signatureUrl is null)
-        {
-            return null;
-        }
+        // A release without both files is still being published; report it so the app does not claim "up to date".
+        setupUrl ??= "";
+        signatureUrl ??= "";
 
         return new ReleaseInfo(
             version,
@@ -145,9 +148,32 @@ public sealed partial class UpdateClient : IDisposable
 
     public static bool IsNewer(ReleaseInfo release, Version current) => release.Version > Normalize(current);
 
+    /// <summary>First lines of the release notes for the "Update available" popup, without the download footer.</summary>
+    public static string SummarizeNotes(string notes)
+    {
+        var body = notes.Replace("\r\n", "\n", StringComparison.Ordinal);
+        var footer = body.IndexOf("\n---", StringComparison.Ordinal);
+        if (footer >= 0)
+        {
+            body = body[..footer];
+        }
+
+        var lines = body.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(l => l.StartsWith("- ", StringComparison.Ordinal) || l.StartsWith("* ", StringComparison.Ordinal) ? "•  " + l[2..] : l)
+            .Take(6)
+            .ToList();
+        var text = string.Join("\n", lines);
+        return text.Length > 600 ? text[..600].TrimEnd() + "…" : text;
+    }
+
     /// <summary>Downloads and fully verifies the release setup. Returns the path of the verified file.</summary>
     public async Task<string> DownloadAsync(ReleaseInfo release, IProgress<DownloadProgress>? progress, CancellationToken cancellationToken)
     {
+        if (!release.IsComplete)
+        {
+            throw new InvalidDataException($"Version {release.Version.ToString(3)} is still being published. Try again in a minute.");
+        }
+
         RequireHttps(release.SetupUrl);
         RequireHttps(release.SignatureUrl);
         Directory.CreateDirectory(_downloadDirectory);

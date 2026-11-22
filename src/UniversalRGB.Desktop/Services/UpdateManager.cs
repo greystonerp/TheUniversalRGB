@@ -4,6 +4,8 @@ using System.Reflection;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using UniversalRGB.Core.Diagnostics;
+using UniversalRGB.Desktop.ViewModels;
+using UniversalRGB.Desktop.Views;
 using UniversalRGB.Drivers.Installation;
 using UniversalRGB.Drivers.Updates;
 
@@ -12,6 +14,10 @@ namespace UniversalRGB.Desktop.Services;
 /// <summary>
 /// Keeps the installed app up to date from the project's GitHub Releases. Updates are only installed after their
 /// ECDSA signature verifies against the release key built into this app.
+/// <list type="bullet">
+/// <item>When the window is open (launch, reopened from the tray, or Check now) an available update is offered in a popup.</item>
+/// <item>When the app runs quietly in the tray, updates install automatically (if enabled).</item>
+/// </list>
 /// </summary>
 public sealed partial class UpdateManager : ObservableObject, IDisposable
 {
@@ -20,20 +26,23 @@ public sealed partial class UpdateManager : ObservableObject, IDisposable
     private readonly ControlCenter _center;
     private readonly UpdateClient _client;
     private readonly IAppLog _log;
+    private readonly Func<bool> _windowVisible;
     private readonly DispatcherTimer _timer;
     private bool _working;
+    private string? _offeredTag;
 
     [ObservableProperty] private string _status = "Not checked yet.";
     [ObservableProperty] private ReleaseInfo? _available;
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private DateTimeOffset? _lastChecked;
 
-    public UpdateManager(ControlCenter center, IAppLog log, string downloadDirectory)
+    public UpdateManager(ControlCenter center, IAppLog log, string downloadDirectory, Func<bool> windowVisible)
     {
         _center = center;
         _log = log;
+        _windowVisible = windowVisible;
         _client = new UpdateClient(Repository, ReleaseKey.PublicKey, downloadDirectory, log);
-        _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(20) };
+        _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _timer.Tick += async (_, _) =>
         {
             _timer.Interval = CheckInterval;
@@ -84,6 +93,7 @@ public sealed partial class UpdateManager : ObservableObject, IDisposable
             return;
         }
 
+        ReleaseInfo? newer = null;
         _working = true;
         IsBusy = true;
         Status = "Checking for updates…";
@@ -103,17 +113,22 @@ public sealed partial class UpdateManager : ObservableObject, IDisposable
                 return;
             }
 
-            Available = latest;
-            Status = $"Version {latest.Version.ToString(3)} is available.";
-            _log.Info($"Update available: {latest.Tag}.");
-            if (CanInstall && _center.Services.Settings.AutoUpdate)
+            if (!latest.IsComplete)
             {
-                _working = false;
-                await InstallAsync();
+                Available = null;
+                Status = $"Version {latest.Version.ToString(3)} is being published right now. Check again in a minute.";
+                if (userInitiated)
+                {
+                    _center.Notify(Status, ToastKind.Info);
+                }
+
                 return;
             }
 
-            _center.Notify($"Universal RGB {latest.Version.ToString(3)} is available. Install it from Settings → Updates.", ToastKind.Info);
+            Available = latest;
+            Status = $"Version {latest.Version.ToString(3)} is available.";
+            _log.Info($"Update available: {latest.Tag}.");
+            newer = latest;
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException or System.Text.Json.JsonException)
         {
@@ -128,6 +143,37 @@ public sealed partial class UpdateManager : ObservableObject, IDisposable
         {
             _working = false;
             IsBusy = false;
+        }
+
+        if (newer is null)
+        {
+            return;
+        }
+
+        if (userInitiated || _windowVisible())
+        {
+            await OfferAsync(newer, force: userInitiated);
+        }
+        else if (CanInstall && _center.Services.Settings.AutoUpdate)
+        {
+            await InstallAsync();
+        }
+        else
+        {
+            _center.Notify($"Universal RGB {newer.Version.ToString(3)} is available. Open the app to install it.", ToastKind.Info);
+        }
+    }
+
+    /// <summary>Called whenever the main window is shown again (e.g. reopened from the tray).</summary>
+    public async void OnWindowShown()
+    {
+        if (Available is { } release)
+        {
+            await OfferAsync(release, force: false);
+        }
+        else if (_client.IsConfigured && (LastChecked is null || DateTimeOffset.Now - LastChecked > TimeSpan.FromHours(1)))
+        {
+            await CheckAsync(userInitiated: false);
         }
     }
 
@@ -176,6 +222,40 @@ public sealed partial class UpdateManager : ObservableObject, IDisposable
         {
             _working = false;
             IsBusy = false;
+        }
+    }
+
+    /// <summary>The "Update available" popup (shown at most once per release per session unless the user asked).</summary>
+    private async Task OfferAsync(ReleaseInfo release, bool force)
+    {
+        if (_working || (!force && _offeredTag == release.Tag))
+        {
+            return;
+        }
+
+        _offeredTag = release.Tag;
+        var version = release.Version.ToString(3);
+        var notes = UpdateClient.SummarizeNotes(release.Notes);
+        var message = $"Universal RGB {version} is ready. You have version {CurrentVersion}."
+            + (notes.Length > 0 ? $"\n\nWhat's new:\n{notes}" : "");
+
+        if (!CanInstall)
+        {
+            if (DialogWindow.Confirm("Update available", message + "\n\nThis copy runs without installing, so get the new setup from GitHub.", "Open download page", cancelText: "Later"))
+            {
+                Shell.Open(release.PageUrl.Length > 0 ? release.PageUrl : ReleasesPage);
+            }
+
+            return;
+        }
+
+        if (DialogWindow.Confirm("Update available", message + "\n\nUpdating takes a few seconds; your lighting keeps running.", "Update now", cancelText: "Later"))
+        {
+            await InstallAsync();
+        }
+        else
+        {
+            Status = $"Version {version} is available. Install it here whenever you like.";
         }
     }
 

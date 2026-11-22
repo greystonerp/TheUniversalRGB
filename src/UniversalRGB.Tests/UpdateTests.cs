@@ -141,10 +141,25 @@ public class UpdateClientTests : IDisposable
     }
 
     [Fact]
-    public void Releases_without_both_assets_are_ignored()
+    public async Task Releases_still_being_published_are_reported_but_not_downloaded()
     {
         using var doc = JsonDocument.Parse("""{ "tag_name": "v0.7.0", "assets": [ { "name": "UniversalRGB-Setup.exe", "browser_download_url": "https://x/y" } ] }""");
-        Assert.Null(UpdateClient.Parse(doc.RootElement));
+        var release = UpdateClient.Parse(doc.RootElement);
+        Assert.NotNull(release);
+        Assert.Equal(new Version(0, 7, 0), release.Version);
+        Assert.False(release.IsComplete);
+
+        using var client = new UpdateClient("owner/UniversalRGB", "key", _dir);
+        var error = await Assert.ThrowsAsync<InvalidDataException>(() => client.DownloadAsync(release, null, CancellationToken.None));
+        Assert.Contains("still being published", error.Message);
+    }
+
+    [Fact]
+    public void Release_notes_are_summarized_for_the_popup()
+    {
+        var notes = "- Setup asks about startup\r\n- MSI firmware guidance\r\n\r\n---\r\nDownload **UniversalRGB-Setup.exe** and run it.";
+        var summary = UpdateClient.SummarizeNotes(notes);
+        Assert.Equal("•  Setup asks about startup\n•  MSI firmware guidance", summary);
     }
 
     [Theory]
