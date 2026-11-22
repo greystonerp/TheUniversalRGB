@@ -56,6 +56,7 @@ public sealed class LightingEngine : IAsyncDisposable
     private readonly IAppLog _log;
     private readonly ConcurrentDictionary<string, DeviceRuntime> _runtime = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, DateTime> _identify = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, Func<RgbDevice, RgbColor[]>> _previews = new(StringComparer.Ordinal);
     private readonly Stopwatch _clock = Stopwatch.StartNew();
 
     private LightingProfile? _profile;
@@ -155,6 +156,27 @@ public sealed class LightingEngine : IAsyncDisposable
         return true;
     }
 
+    /// <summary>
+    /// Shows custom colors on a Direct-mode device instead of the profile (e.g. while counting the LEDs on a header),
+    /// even if the profile leaves the device out. <paramref name="render"/> runs on the engine thread every frame with
+    /// the current device layout. Returns false if the device cannot stream.
+    /// </summary>
+    public bool BeginPreview(string deviceId, Func<RgbDevice, RgbColor[]> render)
+    {
+        ArgumentNullException.ThrowIfNull(render);
+        var device = _registry.Find(deviceId);
+        if (device is null || DeviceCapabilities.From(device).Strategy != ControlStrategy.Streaming)
+        {
+            return false;
+        }
+
+        _previews[deviceId] = render;
+        return true;
+    }
+
+    /// <summary>Gives the device back to the active profile.</summary>
+    public void EndPreview(string deviceId) => _previews.TryRemove(deviceId, out _);
+
     /// <summary>Renders what a device would show at time t for the given profile (used for previews).</summary>
     public static RgbColor[] RenderDevice(RgbDevice device, LightingProfile profile, double timeSeconds, in RenderSignals signals)
     {
@@ -206,7 +228,7 @@ public sealed class LightingEngine : IAsyncDisposable
     private async Task RenderFrameAsync(CancellationToken token)
     {
         var profile = Volatile.Read(ref _profile);
-        if (profile is null)
+        if (profile is null && _previews.IsEmpty)
         {
             return;
         }
@@ -225,13 +247,18 @@ public sealed class LightingEngine : IAsyncDisposable
         foreach (var device in devices)
         {
             token.ThrowIfCancellationRequested();
-            if (!profile.IsDeviceEnabled(device.Id))
+            _previews.TryGetValue(device.Id, out var preview);
+            if (preview is null && (profile is null || !profile.IsDeviceEnabled(device.Id)))
             {
                 continue;
             }
 
             var runtime = _runtime.GetOrAdd(device.Id, _ => new DeviceRuntime());
             runtime.Sync(device);
+            if (preview is not null && runtime.Capabilities!.Strategy != ControlStrategy.Streaming)
+            {
+                continue; // previews are only ever streamed, never written to device memory
+            }
 
             var identifying = _identify.TryGetValue(device.Id, out var until) && until > now;
             if (!identifying)
@@ -241,7 +268,14 @@ public sealed class LightingEngine : IAsyncDisposable
 
             RgbColor[] colors;
             bool animated;
-            if (identifying)
+            if (preview is not null)
+            {
+                colors = new RgbColor[device.LedCount];
+                var rendered = preview(device);
+                rendered.AsSpan(0, Math.Min(rendered.Length, colors.Length)).CopyTo(colors);
+                animated = true;
+            }
+            else if (identifying)
             {
                 colors = new RgbColor[device.LedCount];
                 Array.Fill(colors, ((int)(t * 4) % 2 == 0) ? RgbColor.White : RgbColor.Black);
@@ -249,8 +283,8 @@ public sealed class LightingEngine : IAsyncDisposable
             }
             else
             {
-                colors = RenderDevice(device, profile, t, signals);
-                animated = device.Zones.Any(z => z.LedCount > 0 && profile.ResolveEffect(device.Id, z.Name).IsAnimated);
+                colors = RenderDevice(device, profile!, t, signals);
+                animated = device.Zones.Any(z => z.LedCount > 0 && profile!.ResolveEffect(device.Id, z.Name).IsAnimated);
             }
 
             frame[device.Id] = colors;
@@ -291,12 +325,13 @@ public sealed class LightingEngine : IAsyncDisposable
                         break;
                     }
 
+                    // Previews only reach streaming devices, so a profile is always active on these paths.
                     case ControlStrategy.StaticOnly:
-                        await DriveStaticOnlyAsync(adapter, device, profile, colors, animated, runtime, token).ConfigureAwait(false);
+                        await DriveStaticOnlyAsync(adapter, device, profile!, colors, animated, runtime, token).ConfigureAwait(false);
                         break;
 
                     case ControlStrategy.HardwareOnly:
-                        await DriveHardwareAsync(adapter, device, profile, runtime, token).ConfigureAwait(false);
+                        await DriveHardwareAsync(adapter, device, profile!, runtime, token).ConfigureAwait(false);
                         break;
 
                     case ControlStrategy.None:

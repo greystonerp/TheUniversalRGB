@@ -146,12 +146,15 @@
                                             <StackPanel VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"/>
                                                 <TextBlock Text="{Binding Summary}" Style="{StaticResource TextDim}" Margin="0,2,0,0"/>
-                                                <TextBlock Text="Set how many LEDs are connected to light this header." Style="{StaticResource TextMuted}"
-                                                           Foreground="{StaticResource Blue}" Margin="0,4,0,0"
+                                                <TextBlock Text="Set how many LEDs are connected to light this header, or press Count LEDs to find out." Style="{StaticResource TextMuted}"
+                                                           Foreground="{StaticResource Blue}" Margin="0,4,0,0" TextWrapping="Wrap"
                                                            Visibility="{Binding NeedsSetup, Converter={StaticResource BoolToVis}}"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
                                                         Visibility="{Binding IsResizable, Converter={StaticResource BoolToVis}}">
+                                                <Button Content="Count LEDs" Margin="0,0,8,0" Command="{Binding CountLedsCommand}"
+                                                        ToolTip="Find how many LEDs are on this header with a few yes/no questions"
+                                                        Visibility="{Binding CanCount, Converter={StaticResource BoolToVis}}"/>
                                                 <TextBox Width="64" Text="{Binding LedCountText, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Padding="2,0"
                                                          ToolTip="{Binding Range}"/>
                                                 <Button Content="Set" Margin="6,0,0,0" Command="{Binding ApplyCommand}"/>

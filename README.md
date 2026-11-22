@@ -62,7 +62,7 @@ You can also press **Install missing** on the Drivers page at any time.
 
 After the first connection:
 
-- **Devices** lists every controller. ARGB headers with no LED count set stay dark until you enter one under **Zones**, so put in the number of LEDs on the fans or strip attached.
+- **Devices** lists every controller. ARGB headers with no LED count set stay dark until you set one under **Zones**. Standard 3-pin ARGB headers can't report what is plugged in, so **Count LEDs** finds it with you: it lights one LED at a time and asks whether you can see it (about 9 yes/no questions), then shows the result with a white LED at the end to confirm. Optionally pick LEDs per fan to give each fan its own color. Other lights on that controller are off while you count, and Cancel restores the old size.
 - Pick effects in **Lighting Studio**, then save or schedule them in **Profiles**.
 
 ### Command-line options

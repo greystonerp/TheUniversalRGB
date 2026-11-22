@@ -1,0 +1,101 @@
+<Window x:Class="UniversalRGB.Desktop.Views.LedCounterWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Count LEDs"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="NoResize"
+        SizeToContent="Height" Width="600" WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        FontFamily="{StaticResource UiFont}" Foreground="{StaticResource Text}" UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Display">
+    <Border Margin="18" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line2}" BorderThickness="1"
+            CornerRadius="16" Padding="26,24" MouseLeftButtonDown="OnDrag">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28" ShadowDepth="0" Opacity="0.65"/>
+        </Border.Effect>
+        <StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Border Width="34" Height="34" CornerRadius="10" Background="{StaticResource AccentSoft}"
+                        BorderBrush="{StaticResource AccentLine}" BorderThickness="1" Margin="0,0,12,0" VerticalAlignment="Top">
+                    <TextBlock Text="&#xE781;" Style="{StaticResource Icon}" Foreground="{StaticResource Accent}" HorizontalAlignment="Center"/>
+                </Border>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource H2}" TextWrapping="Wrap" MaxWidth="460">
+                        <Run Text="Count LEDs ·"/> <Run Text="{Binding ZoneName, Mode=OneWay}"/>
+                    </TextBlock>
+                    <TextBlock Text="{Binding DeviceName}" Style="{StaticResource TextDim}" Margin="0,2,0,0"/>
+                </StackPanel>
+            </StackPanel>
+            <TextBlock Style="{StaticResource Body}" Margin="0,14,0,0" TextWrapping="Wrap"
+                       Text="ARGB headers can't report what is plugged into them, so let's find it together. The other lights on this controller are off while you count."/>
+
+            <!-- Guided questions -->
+            <Border Style="{StaticResource SubCard}" Padding="18" Margin="0,16,0,0"
+                    Visibility="{Binding IsSearching, Converter={StaticResource BoolToVis}}">
+                <StackPanel>
+                    <TextBlock Text="{Binding QuestionStep}" Style="{StaticResource Caption}"/>
+                    <TextBlock Text="Can you see a white light on the fans or strips connected to this header?" Style="{StaticResource H3}"
+                               TextWrapping="Wrap" Margin="0,8,0,0"/>
+                    <TextBlock Style="{StaticResource TextMuted}" Margin="0,6,0,0" TextWrapping="Wrap"
+                               Text="It's a single LED, so check every fan. Fans on a splitter cable all show it at the same time."/>
+                    <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                        <Button Content="Yes, I see it" Style="{StaticResource PrimaryButton}" Command="{Binding AnswerYesCommand}" MinWidth="120"
+                                IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}"/>
+                        <Button Content="No" Margin="8,0,0,0" Command="{Binding AnswerNoCommand}" MinWidth="80"
+                                IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}"/>
+                        <Button Content="Use the slider instead" Style="{StaticResource LinkButton}" Margin="18,0,0,0" VerticalAlignment="Center"
+                                Command="{Binding UseSliderCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Confirm / adjust -->
+            <StackPanel Margin="0,16,0,0" Visibility="{Binding IsAdjusting, Converter={StaticResource BoolToVis}}">
+                <Border Background="{StaticResource AccentSoft}" BorderBrush="{StaticResource AccentLine}" BorderThickness="1" CornerRadius="10"
+                        Padding="12,10" Margin="0,0,0,14" Visibility="{Binding ResultMessage, Converter={StaticResource NullToVis}}">
+                    <TextBlock Text="{Binding ResultMessage}" Style="{StaticResource Body}" FontSize="13" TextWrapping="Wrap"/>
+                </Border>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Content="−" Command="{Binding DecreaseCommand}" Width="34" Padding="0" ToolTip="One LED less"/>
+                    <Slider Grid.Column="1" Margin="12,0" VerticalAlignment="Center"
+                            Minimum="{Binding Minimum}" Maximum="{Binding Maximum}" Value="{Binding Count}"
+                            IsSnapToTickEnabled="True" TickFrequency="1" SmallChange="1" LargeChange="8"/>
+                    <Button Grid.Column="2" Content="+" Command="{Binding IncreaseCommand}" Width="34" Padding="0" ToolTip="One LED more"/>
+                    <TextBlock Grid.Column="3" Text="{Binding Count}" Style="{StaticResource Mono}" FontSize="22" MinWidth="56"
+                               TextAlignment="Right" VerticalAlignment="Center"/>
+                </Grid>
+                <TextBlock Style="{StaticResource TextMuted}" Margin="0,10,0,0" TextWrapping="Wrap"
+                           Text="The white LED marks the end. Move it until it sits on the very last LED of the last fan and every LED before it is lit."/>
+
+                <Grid Margin="0,16,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="LEDs per fan" Style="{StaticResource TextDim}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ComboBox Width="104" ItemsSource="{Binding PerFanOptions}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                  SelectedValue="{Binding LedsPerFan}"/>
+                        <StackPanel Orientation="Horizontal" Margin="10,0,0,0" Visibility="{Binding HasPerFan, Converter={StaticResource BoolToVis}}">
+                            <Button Content="Previous fan" Style="{StaticResource GhostButton}" Command="{Binding PreviousFanCommand}"/>
+                            <Button Content="Next fan" Style="{StaticResource GhostButton}" Margin="4,0,0,0" Command="{Binding NextFanCommand}"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBlock Text="{Binding Summary}" Style="{StaticResource H3}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                </Grid>
+                <TextBlock Style="{StaticResource TextDim}" Margin="0,8,0,0" TextWrapping="Wrap"
+                           Visibility="{Binding HasPerFan, Converter={StaticResource BoolToVis}}"
+                           Text="Each fan now shows its own color. A fan with two colors means the LEDs-per-fan number is off."/>
+                <Button Content="Ask me the questions again" Style="{StaticResource LinkButton}" HorizontalAlignment="Left" Margin="0,12,0,0"
+                        Command="{Binding StartSearchCommand}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+                <Button Content="Cancel" Style="{StaticResource GhostButton}" IsCancel="True" Click="OnCancel" MinWidth="90"/>
+                <Button Content="{Binding SaveText}" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" Click="OnSave" MinWidth="120"
+                        Visibility="{Binding IsAdjusting, Converter={StaticResource BoolToVis}}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

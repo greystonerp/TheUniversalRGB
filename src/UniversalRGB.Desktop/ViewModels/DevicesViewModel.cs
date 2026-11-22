@@ -234,6 +234,12 @@ public sealed partial class ZoneEditViewModel : ObservableObject
     public string Range => $"{_zone.LedsMin}–{_zone.LedsMax} LEDs";
     public string Summary => IsResizable ? $"{Kind} · {LedCount} LEDs · adjustable {Range}" : $"{Kind} · {LedCount} LEDs";
 
+    /// <summary>The guided counter streams test patterns, so it needs Direct mode.</summary>
+    public bool CanCount => _zone.IsResizable && DeviceCapabilities.From(_device).Strategy == ControlStrategy.Streaming;
+
+    [RelayCommand]
+    private void CountLeds() => LedCounterWindow.Run(_center, _device, _zone);
+
     [RelayCommand]
     private async Task Apply()
     {

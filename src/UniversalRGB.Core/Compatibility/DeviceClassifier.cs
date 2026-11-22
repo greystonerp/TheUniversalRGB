@@ -261,7 +261,7 @@ public static class DeviceClassifier
                          "and the fans or strips on its RGB headers cannot be controlled yet.";
                 next = "Update the LED firmware (separate from the BIOS): in MSI Center open Support → Live Update, press Advanced, scan, " +
                        "then install the \"LED FW Update\" it finds and follow its prompts (it asks you to shut down and switch the power supply " +
-                       "off for a minute). Afterwards press Restart OpenRGB on the Drivers page and set the LED count for each header.";
+                       "off for a minute). Afterwards press Restart OpenRGB on the Drivers page, then use Count LEDs on each header here.";
                 helpUrl = "https://download.msi.com/archive/mnu_exe/mb/MSI-Center-Update-LED-Firmware.pdf";
                 helpLabel = "MSI guide: update the LED firmware";
             }

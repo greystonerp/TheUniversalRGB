@@ -413,6 +413,26 @@ public class DriverSafetyTests
     }
 
     [Fact]
+    public void A_leftover_feature_folder_without_programs_does_not_count_as_installed()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "urgb-feature-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(folder, "Logs"));
+        try
+        {
+            File.WriteAllText(Path.Combine(folder, "Logs", "ml.log"), "left behind by an uninstall");
+            Assert.False(ConflictDetector.HasPrograms(folder));
+
+            File.WriteAllText(Path.Combine(folder, "LEDKeeper2.exe"), "");
+            Assert.True(ConflictDetector.HasPrograms(folder));
+            Assert.False(ConflictDetector.HasPrograms(Path.Combine(folder, "missing")));
+        }
+        finally
+        {
+            Directory.Delete(folder, recursive: true);
+        }
+    }
+
+    [Fact]
     public void Authenticode_codes_are_interpreted()
     {
         Assert.Equal(SignatureState.NotSigned, AuthenticodeVerifier.Interpret(0x800B0100).Item1);

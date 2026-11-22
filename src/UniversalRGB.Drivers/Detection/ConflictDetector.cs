@@ -64,19 +64,35 @@ public static class ConflictDetector
         return Match(running);
     }
 
-    internal static IReadOnlyList<RunningConflict> Match(IReadOnlySet<string> runningProcessNames, Func<string, bool>? directoryExists = null)
+    internal static IReadOnlyList<RunningConflict> Match(IReadOnlySet<string> runningProcessNames, Func<string, bool>? featureInstalled = null)
     {
-        directoryExists ??= Directory.Exists;
+        featureInstalled ??= HasPrograms;
         var result = new List<RunningConflict>();
         foreach (var app in KnownApps)
         {
             var hit = app.ProcessNames.FirstOrDefault(runningProcessNames.Contains);
-            if (hit is not null && (app.OnlyWithFeature is null || app.OnlyWithFeature.Any(directoryExists)))
+            if (hit is not null && (app.OnlyWithFeature is null || app.OnlyWithFeature.Any(featureInstalled)))
             {
                 result.Add(new RunningConflict(app.DisplayName, hit, app.VendorIds));
             }
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// A feature counts as installed only when its folder still holds programs: uninstalling MSI Center's Mystic Light
+    /// can leave the folder behind with just settings or logs in it.
+    /// </summary>
+    internal static bool HasPrograms(string folder)
+    {
+        try
+        {
+            return Directory.Exists(folder) && Directory.EnumerateFiles(folder, "*.exe", SearchOption.AllDirectories).Any();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 }

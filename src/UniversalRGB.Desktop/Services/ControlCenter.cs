@@ -886,13 +886,17 @@ public sealed partial class ControlCenter : ObservableObject
 
     // ------------------------------------------------------------------ devices
 
-    public async Task<bool> ResizeZoneAsync(RgbDevice device, RgbZone zone, int ledCount)
+    public async Task<bool> ResizeZoneAsync(RgbDevice device, RgbZone zone, int ledCount, bool announce = true)
     {
         try
         {
             await _s.OpenRgb.ResizeZoneAsync(device.Id, zone.Id, ledCount, CancellationToken.None);
             await _s.Registry.RefreshAsync(CancellationToken.None);
-            Notify($"{zone.Name} set to {ledCount} LEDs.", ToastKind.Success);
+            if (announce)
+            {
+                Notify($"{zone.Name} set to {ledCount} LEDs.", ToastKind.Success);
+            }
+
             return true;
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or IOException or KeyNotFoundException)
