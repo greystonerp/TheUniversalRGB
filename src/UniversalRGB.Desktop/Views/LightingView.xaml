@@ -1,0 +1,271 @@
+<UserControl x:Class="UniversalRGB.Desktop.Views.LightingView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:UniversalRGB.Desktop.Controls">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="350"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ================================ Left -->
+        <StackPanel>
+            <!-- Preview -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource H2}">
+                                <Run Text="Editing"/>
+                                <Run Text="{Binding SourceName, Mode=OneWay}" Foreground="{StaticResource Accent}"/>
+                            </TextBlock>
+                            <TextBlock Text="{Binding SelectedEffect.Description}" Style="{StaticResource TextMuted}" Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <Border Grid.Column="1" Style="{StaticResource Badge}" Background="{StaticResource AmberSoft}" BorderBrush="#40FBBF24"
+                                Visibility="{Binding HasChanges, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="Unsaved changes" Foreground="{StaticResource Amber}" FontSize="11.5" FontWeight="SemiBold"/>
+                        </Border>
+                    </Grid>
+                    <Border Margin="0,16,0,0" CornerRadius="10" Background="{StaticResource Bg2}" BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="8">
+                        <ItemsControl ItemsSource="{Binding PreviewLeds}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Rows="1"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Height="38" Margin="1,0" CornerRadius="4" Background="{Binding Brush}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                    <TextBlock Text="{Binding SignalText}" Style="{StaticResource TextDim}" Margin="0,10,0,0"
+                               Visibility="{Binding SignalText, Converter={StaticResource NullToVis}}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Effects -->
+            <Border Style="{StaticResource Card}" Margin="0,20,0,0" Padding="20,20,12,12">
+                <StackPanel>
+                    <TextBlock Text="Effect" Style="{StaticResource H2}" Margin="0,0,0,14"/>
+                    <ListBox ItemsSource="{Binding EffectOptions}" SelectedItem="{Binding SelectedEffect}" ItemContainerStyle="{StaticResource EffectCard}">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="5"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <Border Height="8" CornerRadius="4" Background="{Binding Swatch}"/>
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12.5" Margin="0,10,0,0" TextWrapping="Wrap" LineHeight="16"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+
+            <!-- Parameters -->
+            <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+                <StackPanel>
+                    <TextBlock Text="Parameters" Style="{StaticResource H2}" Margin="0,0,0,8"/>
+
+                    <Grid Margin="0,10,0,0" Visibility="{Binding ShowSpeed, Converter={StaticResource BoolToVis}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="130"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="56"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Speed" Style="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+                        <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding Speed}"/>
+                        <TextBlock Grid.Column="2" Text="{Binding SpeedText}" Style="{StaticResource Mono}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="130"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="56"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Brightness" Style="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+                        <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding Brightness}"/>
+                        <TextBlock Grid.Column="2" Text="{Binding Brightness, StringFormat={}{0:0}%}" Style="{StaticResource Mono}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <CheckBox Content="Reverse direction" IsChecked="{Binding Reverse}" Margin="0,16,0,0"
+                              Visibility="{Binding ShowDirection, Converter={StaticResource BoolToVis}}"/>
+
+                    <StackPanel Visibility="{Binding ShowTemperature, Converter={StaticResource BoolToVis}}">
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="130"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="56"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Cool at" Style="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1" Minimum="20" Maximum="90" Value="{Binding TemperatureLow}"/>
+                            <TextBlock Grid.Column="2" Text="{Binding TemperatureLow, StringFormat={}{0:0} °C}" Style="{StaticResource Mono}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="130"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="56"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Hot at" Style="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1" Minimum="30" Maximum="105" Value="{Binding TemperatureHigh}"/>
+                            <TextBlock Grid.Column="2" Text="{Binding TemperatureHigh, StringFormat={}{0:0} °C}" Style="{StaticResource Mono}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <Grid Margin="0,10,0,0" Visibility="{Binding ShowAudio, Converter={StaticResource BoolToVis}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="130"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="56"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Sensitivity" Style="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+                        <Slider Grid.Column="1" Minimum="1" Maximum="100" Value="{Binding AudioSensitivity}"/>
+                        <TextBlock Grid.Column="2" Text="{Binding AudioSensitivity, StringFormat={}{0:0}}" Style="{StaticResource Mono}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Devices -->
+            <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="Devices" Style="{StaticResource H2}"/>
+                        <CheckBox Content="Sync all devices" IsChecked="{Binding SyncAll}" HorizontalAlignment="Right"/>
+                    </Grid>
+                    <TextBlock Style="{StaticResource TextMuted}" Margin="0,4,0,0"
+                               Text="Synced devices share one effect and clock. Turn sync off to give individual devices their own effect."/>
+
+                    <StackPanel Margin="0,14,0,0" Visibility="{Binding SyncAll, Converter={StaticResource BoolToVis}, ConverterParameter=invert}">
+                        <TextBlock Text="EDITING EFFECT FOR" Style="{StaticResource Caption}" Margin="0,0,0,8"/>
+                        <ComboBox ItemsSource="{Binding Targets}" SelectedItem="{Binding SelectedTarget}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Name}"/>
+                                        <TextBlock Text="{Binding Detail}" Foreground="{StaticResource Dim}" Margin="10,0,0,0"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <TextBlock Text="Connect the OpenRGB SDK server to choose which devices this profile controls." Style="{StaticResource TextDim}" Margin="0,14,0,0"
+                               Visibility="{Binding HasDevices, Converter={StaticResource BoolToVis}, ConverterParameter=invert}"/>
+                    <ItemsControl ItemsSource="{Binding DeviceToggles}" Margin="0,14,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource SubCard}" Padding="12,10" Margin="0,0,0,8">
+                                    <Grid>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"/>
+                                            <TextBlock Text="{Binding Detail}" Style="{StaticResource TextDim}" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                        <CheckBox IsChecked="{Binding Enabled}" HorizontalAlignment="Right" VerticalAlignment="Center" ToolTip="Include this device in the profile"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- ================================ Right -->
+        <StackPanel Grid.Column="2">
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <CheckBox Content="Live on devices" IsChecked="{Binding LivePreview}"
+                              ToolTip="Apply changes to your hardware as you edit (not saved until you press Save)."/>
+                    <TextBlock Style="{StaticResource TextDim}" Margin="0,8,0,0"
+                               Text="Edits run on your hardware immediately, but are only kept when you save."/>
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Style="{StaticResource PrimaryButton}" Command="{Binding SaveCommand}">
+                            <TextBlock Text="{Binding SourceName, StringFormat=Save to {0}}" TextTrimming="CharacterEllipsis"/>
+                        </Button>
+                        <Button Grid.Column="2" Content="Save as new…" Command="{Binding SaveAsNewCommand}"/>
+                    </Grid>
+                    <Grid Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Revert" Style="{StaticResource GhostButton}" Command="{Binding RevertCommand}"/>
+                        <Button Grid.Column="2" Content="Apply now" Style="{StaticResource GhostButton}" Command="{Binding ApplyNowCommand}"
+                                Visibility="{Binding LivePreview, Converter={StaticResource BoolToVis}}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+                <StackPanel>
+                    <TextBlock Text="{Binding ColorHint}" Style="{StaticResource H2}" Visibility="{Binding ShowColors, Converter={StaticResource BoolToVis}}"/>
+                    <TextBlock Text="Color" Style="{StaticResource H2}" Visibility="{Binding ShowColors, Converter={StaticResource BoolToVis}, ConverterParameter=invert}"/>
+                    <TextBlock Text="This effect generates its own colors." Style="{StaticResource TextMuted}" Margin="0,8,0,0"
+                               Visibility="{Binding ShowColors, Converter={StaticResource BoolToVis}, ConverterParameter=invert}"/>
+
+                    <StackPanel Visibility="{Binding ShowColors, Converter={StaticResource BoolToVis}}">
+                        <Grid Margin="0,14,0,14">
+                            <ItemsControl ItemsSource="{Binding Colors}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Width="34" Height="34" Margin="0,0,8,0" Padding="0" Cursor="Hand"
+                                                Command="{Binding DataContext.SelectSlotCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Grid>
+                                                        <Border x:Name="Ring" CornerRadius="10" BorderBrush="Transparent" BorderThickness="2"/>
+                                                        <Border Margin="4" CornerRadius="7" Background="{Binding Brush}" BorderBrush="#26FFFFFF" BorderThickness="1"/>
+                                                    </Grid>
+                                                    <ControlTemplate.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                            <Setter TargetName="Ring" Property="BorderBrush" Value="{StaticResource Accent}"/>
+                                                        </DataTrigger>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="Ring" Property="BorderBrush" Value="{StaticResource LineHover}"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Style="{StaticResource IconButton}" Content="&#xE710;" Command="{Binding AddColorCommand}" ToolTip="Add color"
+                                        IsEnabled="{Binding CanAddColor}"/>
+                                <Button Style="{StaticResource IconButton}" Content="&#xE738;" Command="{Binding RemoveColorCommand}" ToolTip="Remove selected color"
+                                        IsEnabled="{Binding CanRemoveColor}"/>
+                            </StackPanel>
+                        </Grid>
+                        <controls:ColorPicker Color="{Binding PickerColor, Mode=TwoWay}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Grid>
+</UserControl>

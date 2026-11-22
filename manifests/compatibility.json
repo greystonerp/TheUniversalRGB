@@ -1,0 +1,214 @@
+{
+  // Universal RGB compatibility database (seeded into SQLite at startup).
+  // Vendor-family entries only RECOGNIZE hardware; they never mark it as supported.
+  // A device is "Ready" only when a backend (OpenRGB) actually exposes a controllable controller for it.
+  "format": "UniversalRGB.Compatibility",
+  "version": 1,
+  "updated": "2026-11-21",
+  "records": [
+    {
+      "id": "asus-usb",
+      "manufacturer": "ASUS",
+      "model": "Aura USB controllers and ROG peripherals",
+      "category": "Motherboard / Peripheral",
+      "bus": "USB",
+      "vendorId": "0B05",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": "Many ASUS boards expose onboard RGB and ARGB headers through a USB 'AURA LED Controller'. Armoury Crate may hold the device."
+    },
+    {
+      "id": "razer-usb",
+      "manufacturer": "Razer",
+      "model": "Razer peripherals",
+      "category": "Peripheral",
+      "bus": "USB",
+      "vendorId": "1532",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": "Razer Synapse / Chroma may override lighting while running."
+    },
+    {
+      "id": "corsair-usb",
+      "manufacturer": "Corsair",
+      "model": "Corsair peripherals, coolers and lighting hubs",
+      "category": "Peripheral / Cooler",
+      "bus": "USB",
+      "vendorId": "1B1C",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": "iCUE must be closed for OpenRGB to access most Corsair devices."
+    },
+    {
+      "id": "logitech-usb",
+      "manufacturer": "Logitech",
+      "model": "Logitech G peripherals",
+      "category": "Peripheral",
+      "bus": "USB",
+      "vendorId": "046D",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": "Many Logitech devices (webcams, receivers) have no RGB."
+    },
+    {
+      "id": "steelseries-usb",
+      "manufacturer": "SteelSeries",
+      "model": "SteelSeries peripherals",
+      "category": "Peripheral",
+      "bus": "USB",
+      "vendorId": "1038",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": ""
+    },
+    {
+      "id": "nzxt-usb",
+      "manufacturer": "NZXT",
+      "model": "NZXT lighting controllers and coolers",
+      "category": "Cooler / Controller",
+      "bus": "USB",
+      "vendorId": "1E71",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": "Lighting only; pump and fan speed are never changed by Universal RGB."
+    },
+    {
+      "id": "coolermaster-usb",
+      "manufacturer": "Cooler Master",
+      "model": "Cooler Master controllers and peripherals",
+      "category": "Controller / Peripheral",
+      "bus": "USB",
+      "vendorId": "2516",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": ""
+    },
+    {
+      "id": "hyperx-usb",
+      "manufacturer": "Kingston / HyperX",
+      "model": "HyperX peripherals",
+      "category": "Peripheral",
+      "bus": "USB",
+      "vendorId": "0951",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": "Kingston USB storage shares this vendor ID and has no RGB."
+    },
+    {
+      "id": "ite-usb",
+      "manufacturer": "ITE Tech",
+      "model": "ITE RGB controllers (e.g. Gigabyte RGB Fusion 2 USB)",
+      "category": "Motherboard / Controller",
+      "bus": "USB",
+      "vendorId": "048D",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": "ITE chips are also used in many laptop keyboards."
+    },
+    {
+      "id": "msi-usb",
+      "manufacturer": "MSI",
+      "model": "MSI Mystic Light USB controllers",
+      "category": "Motherboard / Controller",
+      "bus": "USB",
+      "vendorId": "1462",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": "MSI Center may hold the device while running."
+    },
+    {
+      "id": "ene-usb",
+      "manufacturer": "ENE Technology",
+      "model": "ENE-based hubs (e.g. Lian Li Uni Hub)",
+      "category": "RGB Hub",
+      "bus": "USB",
+      "vendorId": "0CF2",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": "Hub channels usually need their fan/LED counts configured."
+    },
+    {
+      "id": "thermaltake-usb",
+      "manufacturer": "Thermaltake",
+      "model": "Thermaltake Riing / lighting controllers",
+      "category": "RGB Hub",
+      "bus": "USB",
+      "vendorId": "264A",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": ""
+    },
+    {
+      "id": "roccat-usb",
+      "manufacturer": "Roccat",
+      "model": "Roccat peripherals",
+      "category": "Peripheral",
+      "bus": "USB",
+      "vendorId": "1E7D",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": ""
+    },
+    {
+      "id": "wooting-usb",
+      "manufacturer": "Wooting",
+      "model": "Wooting keyboards",
+      "category": "Keyboard",
+      "bus": "USB",
+      "vendorId": "31E3",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": ""
+    },
+    {
+      "id": "sinowealth-usb",
+      "manufacturer": "SinoWealth",
+      "model": "SinoWealth-based keyboards and mice",
+      "category": "Peripheral",
+      "bus": "USB",
+      "vendorId": "258A",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": "Used by many brands; support depends on the exact product ID."
+    },
+    {
+      "id": "holtek-usb",
+      "manufacturer": "Holtek",
+      "model": "Holtek-based keyboards",
+      "category": "Keyboard",
+      "bus": "USB",
+      "vendorId": "04D9",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": "Used by many brands; support depends on the exact product ID."
+    },
+    {
+      "id": "keychron-usb",
+      "manufacturer": "Keychron",
+      "model": "Keychron keyboards",
+      "category": "Keyboard",
+      "bus": "USB",
+      "vendorId": "3434",
+      "requirements": ["openrgb-sdk-server"],
+      "status": "vendor-family",
+      "verified": false,
+      "notes": "Usually requires QMK firmware with OpenRGB support."
+    }
+  ]
+}

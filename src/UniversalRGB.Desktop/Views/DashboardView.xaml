@@ -1,0 +1,263 @@
+<UserControl x:Class="UniversalRGB.Desktop.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <!-- Stats -->
+        <Border CornerRadius="14" BorderBrush="{StaticResource Line}" BorderThickness="1" Background="{StaticResource Line}" ClipToBounds="True">
+            <UniformGrid Columns="4">
+                <Border Background="{StaticResource Panel}" Padding="20,16" Margin="0,0,1,0">
+                    <StackPanel>
+                        <TextBlock Text="CONTROLLERS" Style="{StaticResource Caption}"/>
+                        <TextBlock Text="{Binding Center.ControllerCount, StringFormat=00}" FontFamily="{StaticResource MonoFont}" FontSize="28" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="{StaticResource Panel}" Padding="20,16" Margin="0,0,1,0">
+                    <StackPanel>
+                        <TextBlock Text="ZONES" Style="{StaticResource Caption}"/>
+                        <TextBlock Text="{Binding Center.ZoneCount, StringFormat=00}" FontFamily="{StaticResource MonoFont}" FontSize="28" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="{StaticResource Panel}" Padding="20,16" Margin="0,0,1,0">
+                    <StackPanel>
+                        <TextBlock Text="LEDS" Style="{StaticResource Caption}"/>
+                        <TextBlock Text="{Binding Center.LedCount, StringFormat=000}" FontFamily="{StaticResource MonoFont}" FontSize="28" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="{StaticResource Panel}" Padding="20,16">
+                    <StackPanel>
+                        <TextBlock Text="NEEDS ATTENTION" Style="{StaticResource Caption}"/>
+                        <TextBlock Text="{Binding AttentionCount, StringFormat=00}" FontFamily="{StaticResource MonoFont}" FontSize="28" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+        </Border>
+
+        <Grid Margin="0,20,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.75*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ======================= Live lighting -->
+            <StackPanel>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Live lighting" Style="{StaticResource H2}"/>
+                                <TextBlock Style="{StaticResource TextMuted}" Margin="0,3,0,0">
+                                    <Run Text="Running"/>
+                                    <Run Text="{Binding Center.LiveDescription, Mode=OneWay}" Foreground="{StaticResource Text}" FontWeight="SemiBold"/>
+                                </TextBlock>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
+                                        Visibility="{Binding Center.IsTransient, Converter={StaticResource BoolToVis}}">
+                                <Button Content="Revert" Style="{StaticResource GhostButton}" Command="{Binding RevertCommand}" Height="32"/>
+                                <Button Content="Save as profile…" Command="{Binding SaveAsProfileCommand}" Height="32" Margin="6,0,0,0"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <Border Margin="0,18,0,0" CornerRadius="10" Background="{StaticResource Bg2}" BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="8">
+                            <ItemsControl ItemsSource="{Binding Strip}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Rows="1"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Height="30" Margin="1,0" CornerRadius="3" Background="{Binding Brush}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+
+                        <Grid Margin="0,18,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="52"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="&#xE706;" Style="{StaticResource Icon}" Foreground="{StaticResource Muted}" Margin="0,0,12,0"/>
+                            <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding Center.MasterBrightness, Mode=TwoWay}" VerticalAlignment="Center"
+                                    ToolTip="Master brightness for the running profile"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Center.MasterBrightness, StringFormat={}{0:0}%}" Style="{StaticResource Mono}"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <TextBlock Text="QUICK EFFECTS" Style="{StaticResource Caption}" Margin="0,20,0,10"/>
+                        <ItemsControl ItemsSource="{Binding QuickEffects}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="6"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Margin="0,0,8,0" Height="64" Padding="10,8"
+                                            Command="{Binding DataContext.ApplyQuickCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}" HorizontalContentAlignment="Stretch">
+                                        <StackPanel>
+                                            <Border Height="14" Width="64" CornerRadius="4" Background="{Binding Swatch}"/>
+                                            <TextBlock Text="{Binding Name}" Margin="0,8,0,0" HorizontalAlignment="Center" FontSize="12.5"/>
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="Open Lighting Studio" Style="{StaticResource LinkButton}" Command="{Binding OpenStudioCommand}" Margin="0,14,0,0" HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Device previews -->
+                <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Devices" Style="{StaticResource H2}"/>
+                        <TextBlock Text="What each controller is showing right now." Style="{StaticResource TextMuted}" Margin="0,3,0,14"/>
+
+                        <Border Style="{StaticResource SubCard}" Padding="18"
+                                Visibility="{Binding Center.ControllerCount, Converter={StaticResource EqVis}, ConverterParameter=0}">
+                            <StackPanel>
+                                <TextBlock Text="No controllable devices yet" Style="{StaticResource H3}"/>
+                                <TextBlock Style="{StaticResource TextMuted}" Margin="0,4,0,12"
+                                           Text="Universal RGB controls lighting through the OpenRGB SDK server. Start it (or connect to one that is already running) to see your devices here."/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Set up OpenRGB" Style="{StaticResource PrimaryButton}"
+                                            Command="{Binding DataContext.StartServerCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                    <Button Content="Connect" Margin="8,0,0,0"
+                                            Command="{Binding DataContext.ConnectCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                    <Button Content="Open Drivers page" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Command="{Binding OpenDriversCommand}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <ItemsControl ItemsSource="{Binding Previews}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource SubCard}" Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Name}" Style="{StaticResource H3}"/>
+                                                    <TextBlock Text="{Binding Subtitle}" Style="{StaticResource TextDim}" Margin="0,2,0,0"/>
+                                                </StackPanel>
+                                                <Border Grid.Column="1" Style="{StaticResource Badge}" Background="{StaticResource AccentSoft}" BorderBrush="{StaticResource AccentLine}">
+                                                    <TextBlock Text="{Binding Mode}" Foreground="{StaticResource Accent}" FontSize="11.5" FontWeight="SemiBold"/>
+                                                </Border>
+                                            </Grid>
+                                            <ItemsControl ItemsSource="{Binding Leds}" Margin="0,12,0,0">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Width="12" Height="18" Margin="0,0,3,3" CornerRadius="3" Background="{Binding Brush}"
+                                                                BorderBrush="#14FFFFFF" BorderThickness="1"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <TextBlock Text="{Binding Truncated}" Style="{StaticResource TextDim}"
+                                                       Visibility="{Binding Truncated, Converter={StaticResource NullToVis}}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- ======================= Right column -->
+            <StackPanel Grid.Column="2">
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="RGB backend" Style="{StaticResource H2}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                            <Ellipse Width="10" Height="10" Fill="{Binding Center.IsConnected, Converter={StaticResource StatusBrush}}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Center.ConnectionText}" FontWeight="SemiBold" Margin="10,0,0,0"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding Center.ConnectionDetail}" Style="{StaticResource TextMuted}" Margin="0,6,0,0"/>
+                        <WrapPanel Margin="0,16,0,0">
+                            <Button Content="Set up OpenRGB" Style="{StaticResource PrimaryButton}" Margin="0,0,8,8"
+                                    Command="{Binding DataContext.StartServerCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    Visibility="{Binding Center.IsConnected, Converter={StaticResource BoolToVis}, ConverterParameter=invert}"/>
+                            <Button Content="Rescan hardware" Margin="0,0,8,8" Command="{Binding RescanCommand}"/>
+                        </WrapPanel>
+                        <TextBlock Style="{StaticResource TextDim}" Margin="0,4,0,0">
+                            <Run Text="Last scan:"/>
+                            <Run Text="{Binding Center.LastScan, StringFormat=t, Mode=OneWay, TargetNullValue=never}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+                    <StackPanel>
+                        <Grid>
+                            <TextBlock Text="Needs attention" Style="{StaticResource H2}"/>
+                            <Button Content="View all" Style="{StaticResource LinkButton}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                    Command="{Binding OpenDevicesCommand}"/>
+                        </Grid>
+                        <TextBlock Text="Everything detected looks fine." Style="{StaticResource TextMuted}" Margin="0,12,0,0"
+                                   Visibility="{Binding AttentionCount, Converter={StaticResource EqVis}, ConverterParameter=0}"/>
+                        <ItemsControl ItemsSource="{Binding Attention}" Margin="0,12,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource SubCard}" Margin="0,0,0,8" Padding="12">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" TextTrimming="CharacterEllipsis"/>
+                                                <ContentPresenter Grid.Column="1" Content="{Binding Status}" ContentTemplate="{StaticResource StatusBadge}" Margin="8,0,0,0"/>
+                                            </Grid>
+                                            <TextBlock Text="{Binding StatusDetail}" Style="{StaticResource TextMuted}" Margin="0,6,0,0"/>
+                                            <TextBlock Text="{Binding NextStep}" Style="{StaticResource TextMuted}" Foreground="{StaticResource Accent}" Margin="0,4,0,0"
+                                                       Visibility="{Binding NextStep, Converter={StaticResource NullToVis}}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Safety" Style="{StaticResource H2}"/>
+                        <StackPanel Margin="0,12,0,0">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="&#xE73E;" Style="{StaticResource Icon}" Foreground="{StaticResource Green}" FontSize="12" Margin="0,0,10,0"/>
+                                <TextBlock Text="Only lighting is changed — never fan or pump speed." Style="{StaticResource TextMuted}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="&#xE73E;" Style="{StaticResource Icon}" Foreground="{StaticResource Green}" FontSize="12" Margin="0,0,10,0"/>
+                                <TextBlock Text="Animations only stream to devices with a Direct mode." Style="{StaticResource TextMuted}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <TextBlock Text="&#xE73E;" Style="{StaticResource Icon}" Foreground="{StaticResource Green}" FontSize="12" Margin="0,0,10,0"/>
+                                <TextBlock Text="Drivers are verified and only installed with your approval." Style="{StaticResource TextMuted}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE73E;" Style="{StaticResource Icon}" Foreground="{StaticResource Green}" FontSize="12" Margin="0,0,10,0"/>
+                                <TextBlock Text="Other RGB apps are reported, never closed." Style="{StaticResource TextMuted}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </StackPanel>
+</UserControl>

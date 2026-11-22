@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>UniversalRGB.Drivers</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UniversalRGB.Core\UniversalRGB.Core.csproj" />
+    <ProjectReference Include="..\UniversalRGB.Adapters\UniversalRGB.Adapters.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="UniversalRGB.Tests" />
+  </ItemGroup>
+
+</Project>

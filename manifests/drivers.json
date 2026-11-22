@@ -1,0 +1,52 @@
+{
+  // Curated official packages. Downloads are only accepted when they match a pinned SHA-256.
+  // Portable per-user packages (autoInstall) may be set up without a prompt when automatic setup is enabled.
+  // Drivers and anything that needs administrator rights always show a consent dialog and a UAC prompt.
+  "format": "UniversalRGB.Drivers",
+  "version": 2,
+  "packages": [
+    {
+      "id": "openrgb",
+      "name": "OpenRGB",
+      "version": "1.1",
+      "publisher": "OpenRGB project",
+      "purpose": "Open-source RGB backend. Universal RGB controls supported devices through its SDK server.",
+      "officialPage": "https://openrgb.org/releases.html",
+      "downloadUrl": "https://codeberg.org/OpenRGB/OpenRGB/releases/download/release_1.1/OpenRGB_1.1_Windows_64_8e16de2.zip",
+      "sizeBytes": 22019605,
+      "sha256": ["63291726C6FC84EB479EF2EE752E97E1187F6CE9C49FD27EEE40DED588A8172A"],
+      "format": "zip",
+      "zipExecutable": "OpenRGB Windows 64-bit/OpenRGB.exe",
+      "installDirectory": "%LOCALAPPDATA%\\Programs\\OpenRGB",
+      "kind": "application",
+      "requiresAdministrator": false,
+      "restart": "no",
+      "requirementId": "openrgb",
+      "installable": true,
+      "autoInstall": true,
+      "fileNameHints": ["OpenRGB"],
+      "notes": "Official portable build, unpacked for your user account (no administrator rights). OpenRGB is not code-signed upstream, so the download must match the pinned SHA-256."
+    },
+    {
+      "id": "pawnio",
+      "name": "PawnIO",
+      "version": "2.2.0",
+      "publisher": "namazso",
+      "purpose": "Kernel driver that OpenRGB uses for SMBus/I2C access (RGB memory, some motherboards and graphics cards).",
+      "officialPage": "https://pawnio.eu/",
+      "downloadUrl": "https://github.com/namazso/PawnIO.Setup/releases/download/2.2.0/PawnIO_setup.exe",
+      "sizeBytes": 3410960,
+      "sha256": ["1F519A22E47187F70A1379A48CA604981C4FCF694F4E65B734AAA74A9FBA3032"],
+      "format": "exe",
+      "kind": "kernel-driver",
+      "requiresAdministrator": true,
+      "restart": "maybe",
+      "requirementId": "pawnio",
+      "installable": true,
+      "autoInstall": false,
+      "expectedSigners": ["namazso.eu"],
+      "fileNameHints": ["PawnIO"],
+      "notes": "Only needed for SMBus-based lighting. Signed by namazso.eu; Universal RGB checks the signature and pinned hash, then asks before running it."
+    }
+  ]
+}

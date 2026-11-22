@@ -1,0 +1,13 @@
+bin/
+obj/
+dist/
+.vs/
+*.user
+*.suo
+TestResults/
+
+# Release signing keys must never be committed (the private key lives in %USERPROFILE%\.universalrgb).
+*.pem
+*.key
+*.pfx
+.universalrgb/

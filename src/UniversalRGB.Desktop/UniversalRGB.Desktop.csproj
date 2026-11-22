@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>UniversalRGB</AssemblyName>
+    <RootNamespace>UniversalRGB.Desktop</RootNamespace>
+    <ApplicationIcon>..\..\assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <!-- WPF declares per-monitor DPI awareness in app.manifest; WinForms is only used for the tray icon. -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+    <!-- GitHub repository whose Releases deliver signed updates. -->
+    <UpdateRepository>greystonerp/UniversalRGB</UpdateRepository>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="UpdateRepository" Value="$(UpdateRepository)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- WPF and WinForms share type names; only WPF namespaces are imported implicitly. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Serilog" Version="4.4.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UniversalRGB.Core\UniversalRGB.Core.csproj" />
+    <ProjectReference Include="..\UniversalRGB.Hardware\UniversalRGB.Hardware.csproj" />
+    <ProjectReference Include="..\UniversalRGB.Adapters\UniversalRGB.Adapters.csproj" />
+    <ProjectReference Include="..\UniversalRGB.Drivers\UniversalRGB.Drivers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\..\assets\app.ico" Link="Assets\app.ico" />
+    <!-- Manifests ship next to the EXE (updatable) and are embedded as a fallback for single-file builds. -->
+    <None Include="..\..\manifests\*.json" Link="manifests\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <EmbeddedResource Include="..\..\manifests\*.json" Link="Manifests\%(Filename)%(Extension)" LogicalName="manifests.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>

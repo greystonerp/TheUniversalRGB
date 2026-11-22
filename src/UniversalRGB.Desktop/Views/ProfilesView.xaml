@@ -1,0 +1,118 @@
+<UserControl x:Class="UniversalRGB.Desktop.Views.ProfilesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <Grid>
+            <TextBlock Style="{StaticResource TextMuted}" VerticalAlignment="Center" FontSize="13"
+                       Text="Profiles are stored as JSON in your user folder. Schedules switch profiles automatically each day."/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Command="{Binding ImportCommand}" Margin="0,0,8,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE8E5;" Style="{StaticResource Icon}" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Import"/>
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding ExportCommand}" CommandParameter="{x:Null}" Margin="0,0,8,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE898;" Style="{StaticResource Icon}" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="Export all"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource PrimaryButton}" Command="{Binding NewProfileCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE710;" Style="{StaticResource Icon}" FontSize="13" Margin="0,0,8,0"/>
+                        <TextBlock Text="New profile"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <ItemsControl ItemsSource="{Binding Cards}" Margin="0,18,0,0">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="2"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="0,0,16,16" Padding="20" CornerRadius="14" BorderThickness="1" Background="{StaticResource Panel}">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                        <Setter Property="BorderBrush" Value="{StaticResource AccentLine}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel>
+                            <Border Height="8" CornerRadius="4" Background="{Binding Swatch}"/>
+                            <Grid Margin="0,16,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Name}" Style="{StaticResource H2}" TextTrimming="CharacterEllipsis"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Border Style="{StaticResource Badge}" Background="{StaticResource AccentSoft}" BorderBrush="{StaticResource AccentLine}" Margin="6,0,0,0"
+                                            Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="Active" Foreground="{StaticResource Accent}" FontSize="11.5" FontWeight="SemiBold"/>
+                                    </Border>
+                                    <Border Style="{StaticResource Badge}" Background="{StaticResource BlueSoft}" BorderBrush="#4060A5FA" Margin="6,0,0,0"
+                                            Visibility="{Binding IsStartup, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="Startup" Foreground="{StaticResource Blue}" FontSize="11.5" FontWeight="SemiBold"/>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Text="{Binding Description}" Style="{StaticResource TextMuted}" Margin="0,6,0,0"/>
+                            <TextBlock Text="{Binding EffectSummary}" Style="{StaticResource TextDim}" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding Modified}" Style="{StaticResource TextDim}" FontSize="11.5" Margin="0,2,0,0"/>
+
+                            <Border Style="{StaticResource SubCard}" Padding="12,10" Margin="0,16,0,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox Content="Daily schedule" IsChecked="{Binding ScheduleEnabled}" FontSize="12.5"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <TextBox Width="64" Height="30" Text="{Binding ScheduleStart, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Padding="2,0"
+                                                 FontFamily="{StaticResource MonoFont}" FontSize="12" ToolTip="Start (24-hour)"/>
+                                        <TextBlock Text="–" Margin="6,0" VerticalAlignment="Center" Foreground="{StaticResource Dim}"/>
+                                        <TextBox Width="64" Height="30" Text="{Binding ScheduleEnd, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Padding="2,0"
+                                                 FontFamily="{StaticResource MonoFont}" FontSize="12" ToolTip="End (24-hour)"/>
+                                        <Button Content="Save" Height="30" Margin="8,0,0,0" FontSize="12"
+                                                Command="{Binding DataContext.SaveScheduleCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <Grid Margin="0,16,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Apply" Style="{StaticResource PrimaryButton}" Height="32"
+                                            Command="{Binding DataContext.ApplyCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                    <Button Content="Edit" Height="32" Margin="8,0,0,0"
+                                            Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button Style="{StaticResource IconButton}" Content="&#xE7E8;" ToolTip="Use at startup (toggle)"
+                                            Command="{Binding DataContext.ToggleStartupCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                    <Button Style="{StaticResource IconButton}" Content="&#xE70F;" ToolTip="Rename"
+                                            Command="{Binding DataContext.RenameCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                    <Button Style="{StaticResource IconButton}" Content="&#xE8C8;" ToolTip="Duplicate"
+                                            Command="{Binding DataContext.DuplicateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                    <Button Style="{StaticResource IconButton}" Content="&#xE898;" ToolTip="Export"
+                                            Command="{Binding DataContext.ExportCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                    <Button Style="{StaticResource IconButton}" Content="&#xE74D;" ToolTip="Delete" Foreground="{StaticResource Red}"
+                                            Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>

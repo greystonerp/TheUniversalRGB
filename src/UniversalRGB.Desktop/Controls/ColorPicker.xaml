@@ -1,0 +1,96 @@
+<UserControl x:Class="UniversalRGB.Desktop.Controls.ColorPicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <!-- Saturation / value square -->
+        <Grid x:Name="SvArea" Height="156" Cursor="Cross" ClipToBounds="True"
+              MouseLeftButtonDown="OnSvDown" MouseMove="OnSvMove" MouseLeftButtonUp="OnSvUp" SizeChanged="OnSvSizeChanged">
+            <Border x:Name="HueLayer" CornerRadius="10" Background="Red"/>
+            <Border CornerRadius="10">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#FFFFFFFF" Offset="0"/>
+                        <GradientStop Color="#00FFFFFF" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+            <Border CornerRadius="10">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#00000000" Offset="0"/>
+                        <GradientStop Color="#FF000000" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+            <Border CornerRadius="10" BorderBrush="{StaticResource Line2}" BorderThickness="1"/>
+            <Canvas IsHitTestVisible="False">
+                <Ellipse x:Name="SvThumb" Width="16" Height="16" Stroke="White" StrokeThickness="2.5">
+                    <Ellipse.Effect>
+                        <DropShadowEffect BlurRadius="4" ShadowDepth="0" Opacity="0.7"/>
+                    </Ellipse.Effect>
+                </Ellipse>
+            </Canvas>
+        </Grid>
+
+        <!-- Hue -->
+        <Slider x:Name="HueSlider" Style="{StaticResource HueSlider}" Margin="0,12,0,0" ValueChanged="OnHueChanged"/>
+
+        <!-- Values -->
+        <Grid Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="36"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="54"/>
+                <ColumnDefinition Width="54"/>
+                <ColumnDefinition Width="54"/>
+            </Grid.ColumnDefinitions>
+            <Border x:Name="Preview" Width="36" Height="36" CornerRadius="9" BorderBrush="{StaticResource Line2}" BorderThickness="1"/>
+            <TextBox x:Name="HexBox" Grid.Column="1" Margin="8,0,0,0" FontFamily="{StaticResource MonoFont}" MaxLength="7"
+                     LostKeyboardFocus="OnHexCommit" KeyDown="OnHexKeyDown" ToolTip="HEX color, e.g. #22D3EE"/>
+            <TextBox x:Name="RBox" Grid.Column="2" Margin="6,0,0,0" TextAlignment="Center" Padding="2,0" MaxLength="3"
+                     LostKeyboardFocus="OnRgbCommit" KeyDown="OnRgbKeyDown" ToolTip="Red 0–255"/>
+            <TextBox x:Name="GBox" Grid.Column="3" Margin="6,0,0,0" TextAlignment="Center" Padding="2,0" MaxLength="3"
+                     LostKeyboardFocus="OnRgbCommit" KeyDown="OnRgbKeyDown" ToolTip="Green 0–255"/>
+            <TextBox x:Name="BBox" Grid.Column="4" Margin="6,0,0,0" TextAlignment="Center" Padding="2,0" MaxLength="3"
+                     LostKeyboardFocus="OnRgbCommit" KeyDown="OnRgbKeyDown" ToolTip="Blue 0–255"/>
+        </Grid>
+        <Grid Margin="0,4,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="44"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="54"/>
+                <ColumnDefinition Width="54"/>
+                <ColumnDefinition Width="54"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="1" Text="HEX" Style="{StaticResource Caption}" Margin="10,0,0,0"/>
+            <TextBlock Grid.Column="2" Text="R" Style="{StaticResource Caption}" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Column="3" Text="G" Style="{StaticResource Caption}" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Column="4" Text="B" Style="{StaticResource Caption}" HorizontalAlignment="Center"/>
+        </Grid>
+
+        <!-- Presets -->
+        <ItemsControl x:Name="Presets" Margin="0,12,0,0">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="1"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Height="24" Margin="0,0,6,0" Padding="0" Click="OnPreset" Tag="{Binding}" ToolTip="{Binding}">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="B" CornerRadius="6" Background="{Binding}" BorderBrush="#26FFFFFF" BorderThickness="1"/>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="B" Property="BorderBrush" Value="White"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
+</UserControl>

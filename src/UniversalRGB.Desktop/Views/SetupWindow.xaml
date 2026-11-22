@@ -1,0 +1,85 @@
+<Window x:Class="UniversalRGB.Desktop.Views.SetupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Universal RGB Control Setup" Icon="pack://application:,,,/Assets/app.ico"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="NoResize"
+        SizeToContent="Height" Width="560" WindowStartupLocation="CenterScreen"
+        FontFamily="{StaticResource UiFont}" Foreground="{StaticResource Text}" FontSize="13.5"
+        UseLayoutRounding="True" TextOptions.TextFormattingMode="Display">
+    <Border Margin="20" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line2}" BorderThickness="1"
+            CornerRadius="18" Padding="30,28" MouseLeftButtonDown="OnDrag">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="30" ShadowDepth="0" Opacity="0.65"/>
+        </Border.Effect>
+        <StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Grid Width="48" Height="48">
+                    <Border CornerRadius="13" Background="{StaticResource Panel2}" BorderBrush="{StaticResource Line}" BorderThickness="1"/>
+                    <Ellipse Width="26" Height="26" StrokeThickness="5" Stroke="{StaticResource RgbGradient}"/>
+                </Grid>
+                <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Universal RGB Control" Style="{StaticResource H2}" FontSize="19"/>
+                    <TextBlock x:Name="Subtitle" Text="Setting things up…" Style="{StaticResource TextMuted}" FontSize="13" Margin="0,3,0,0"/>
+                </StackPanel>
+            </StackPanel>
+
+            <ProgressBar x:Name="Progress" Height="4" Margin="0,24,0,0" Minimum="0" Maximum="1">
+                <ProgressBar.Template>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Grid>
+                            <Border x:Name="PART_Track" CornerRadius="2" Background="{StaticResource Line2}"/>
+                            <Border x:Name="PART_Indicator" CornerRadius="2" Background="{StaticResource RgbGradient}" HorizontalAlignment="Left"/>
+                        </Grid>
+                    </ControlTemplate>
+                </ProgressBar.Template>
+            </ProgressBar>
+
+            <ItemsControl x:Name="StepList" Margin="0,20,0,0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,11">
+                            <Grid Width="22">
+                                <TextBlock x:Name="Glyph" Text="&#xE91F;" Style="{StaticResource Icon}" FontSize="9" Foreground="{StaticResource Line2}" HorizontalAlignment="Left"/>
+                            </Grid>
+                            <TextBlock x:Name="Label" Text="{Binding Text}" Foreground="{StaticResource Dim}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding State}" Value="Active">
+                                <Setter TargetName="Glyph" Property="Foreground" Value="{StaticResource Accent}"/>
+                                <Setter TargetName="Label" Property="Foreground" Value="{StaticResource Text}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding State}" Value="Done">
+                                <Setter TargetName="Glyph" Property="Text" Value="&#xE73E;"/>
+                                <Setter TargetName="Glyph" Property="FontSize" Value="13"/>
+                                <Setter TargetName="Glyph" Property="Foreground" Value="{StaticResource Green}"/>
+                                <Setter TargetName="Label" Property="Foreground" Value="{StaticResource Text2}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding State}" Value="Failed">
+                                <Setter TargetName="Glyph" Property="Text" Value="&#xE711;"/>
+                                <Setter TargetName="Glyph" Property="FontSize" Value="12"/>
+                                <Setter TargetName="Glyph" Property="Foreground" Value="{StaticResource Red}"/>
+                                <Setter TargetName="Label" Property="Foreground" Value="{StaticResource Red}"/>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border x:Name="ErrorPanel" Visibility="Collapsed" Margin="0,6,0,0" Background="{StaticResource RedSoft}" BorderBrush="#40F87171"
+                    BorderThickness="1" CornerRadius="10" Padding="14,11">
+                <TextBlock x:Name="ErrorText" Style="{StaticResource Body}" FontSize="12.5"/>
+            </Border>
+
+            <Rectangle Style="{StaticResource Divider}" Margin="0,14,0,14"/>
+            <Grid>
+                <TextBlock x:Name="Footer" Style="{StaticResource TextDim}" FontSize="11.5" VerticalAlignment="Center" Margin="0,0,250,0"
+                           TextTrimming="CharacterEllipsis"/>
+                <StackPanel x:Name="ErrorButtons" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="Collapsed">
+                    <Button Content="Close" Style="{StaticResource GhostButton}" Click="OnClose"/>
+                    <Button Content="Run without installing" Margin="6,0,0,0" Click="OnRunPortable"/>
+                    <Button Content="Retry" Style="{StaticResource PrimaryButton}" Margin="6,0,0,0" Click="OnRetry"/>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </Border>
+</Window>

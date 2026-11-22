@@ -1,0 +1,138 @@
+<UserControl x:Class="UniversalRGB.Desktop.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel>
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="OpenRGB connection" Style="{StaticResource H2}"/>
+                    <TextBlock Text="Universal RGB talks to the OpenRGB SDK server (default 127.0.0.1:6742)." Style="{StaticResource TextMuted}" Margin="0,3,0,14"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="100"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="HOST" Style="{StaticResource Caption}" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding Host, UpdateSourceTrigger=LostFocus}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="PORT" Style="{StaticResource Caption}" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding Port, UpdateSourceTrigger=LostFocus}"/>
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Text="OPENRGB.EXE" Style="{StaticResource Caption}" Margin="0,14,0,6"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="{Binding OpenRgbPath, Mode=OneWay}" IsReadOnly="True" FontFamily="{StaticResource MonoFont}" FontSize="12"/>
+                        <Button Grid.Column="1" Content="Browse…" Margin="8,0,0,0" Command="{Binding LocateOpenRgbCommand}"/>
+                        <Button Grid.Column="2" Content="Auto" Style="{StaticResource GhostButton}" Margin="4,0,0,0" Command="{Binding ClearOpenRgbPathCommand}"
+                                ToolTip="Find OpenRGB automatically"/>
+                    </Grid>
+                    <CheckBox Content="Connect automatically" IsChecked="{Binding AutoConnect}" Margin="0,18,0,0"/>
+                    <CheckBox Content="Set up OpenRGB automatically (install the verified official release if missing and keep its server running in the background)"
+                              IsChecked="{Binding AutoInstallRequirements}" Margin="0,12,0,0"/>
+                    <CheckBox Content="Start OpenRGB as administrator (needed for SMBus devices such as RGB RAM)" IsChecked="{Binding LaunchOpenRgbElevated}" Margin="0,12,0,0"/>
+                    <Button Content="Reconnect" Margin="0,18,0,0" HorizontalAlignment="Left" Command="{Binding ReconnectCommand}"/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+                <StackPanel>
+                    <TextBlock Text="Lighting engine" Style="{StaticResource H2}"/>
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="60"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Refresh rate" Style="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+                        <Slider Grid.Column="1" Minimum="10" Maximum="60" Value="{Binding FrameRate}" SmallChange="5" LargeChange="10"/>
+                        <TextBlock Grid.Column="2" Text="{Binding FrameRateText}" Style="{StaticResource Mono}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+                    <TextBlock Style="{StaticResource TextDim}" Margin="0,6,0,0"
+                               Text="Applies to Direct-mode devices only. Lower values use less USB bandwidth and CPU."/>
+                    <CheckBox Content="Rescan when devices are plugged in or removed" IsChecked="{Binding RescanOnDeviceChange}" Margin="0,16,0,0"/>
+                    <CheckBox Content="Run profile schedules" IsChecked="{Binding EnableProfileSchedules}" Margin="0,12,0,0"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Column="2">
+            <Border Style="{StaticResource Card}" Margin="0,0,0,20">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="Updates" Style="{StaticResource H2}"/>
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource Mono}">
+                            <Run Text="v"/><Run Text="{Binding Updates.CurrentVersion, Mode=OneWay}"/>
+                        </TextBlock>
+                    </Grid>
+                    <TextBlock Text="{Binding Updates.Status}" Style="{StaticResource TextMuted}" Margin="0,8,0,0"/>
+                    <CheckBox Content="Install updates automatically (signed releases from GitHub)" IsChecked="{Binding AutoUpdate}" Margin="0,14,0,0"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                        <Button Content="Install update" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" Command="{Binding InstallUpdateCommand}"
+                                Visibility="{Binding Updates.IsUpdateAvailable, Converter={StaticResource BoolToVis}}"/>
+                        <Button Content="Check now" Margin="0,0,8,0" Command="{Binding CheckForUpdatesCommand}"
+                                IsEnabled="{Binding Updates.IsBusy, Converter={StaticResource Not}}"/>
+                        <Button Content="Release notes" Style="{StaticResource GhostButton}" Command="{Binding OpenReleasesCommand}"/>
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource TextDim}" Margin="0,10,0,0"
+                               Text="Updates are only installed when their signature matches the Universal RGB release key built into this app."/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Startup" Style="{StaticResource H2}"/>
+                    <CheckBox Content="Start with Windows" IsChecked="{Binding StartWithWindows}" Margin="0,16,0,0"/>
+                    <CheckBox Content="Start minimized to the tray when launched at login" IsChecked="{Binding StartMinimizedAtLogin}" Margin="0,12,0,0"/>
+                    <CheckBox Content="Restore lighting profile on startup" IsChecked="{Binding RestoreProfileOnStartup}" Margin="0,12,0,0"/>
+                    <CheckBox Content="Keep running in the tray when the window is closed" IsChecked="{Binding MinimizeToTray}" Margin="0,12,0,0"/>
+                    <TextBlock Style="{StaticResource TextDim}" Margin="0,10,0,0"
+                               Text="Animated effects are rendered by this app, so it has to keep running for them to continue."/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+                <StackPanel>
+                    <TextBlock Text="Data &amp; logs" Style="{StaticResource H2}"/>
+                    <TextBlock Text="SETTINGS AND PROFILES" Style="{StaticResource Caption}" Margin="0,14,0,4"/>
+                    <TextBlock Text="{Binding DataFolder}" Style="{StaticResource Mono}" TextWrapping="Wrap"/>
+                    <TextBlock Text="DATABASE, LOGS AND VERIFIED PACKAGES" Style="{StaticResource Caption}" Margin="0,12,0,4"/>
+                    <TextBlock Text="{Binding LocalFolder}" Style="{StaticResource Mono}" TextWrapping="Wrap"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                        <Button Content="Open data folder" Command="{Binding OpenDataFolderCommand}"/>
+                        <Button Content="Open logs" Margin="8,0,0,0" Command="{Binding OpenLogsCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+                <StackPanel>
+                    <TextBlock Text="About" Style="{StaticResource H2}"/>
+                    <TextBlock Text="{Binding Version}" Style="{StaticResource Body}" Margin="0,10,0,0"/>
+                    <TextBlock Style="{StaticResource TextMuted}" Margin="0,6,0,0"
+                               Text="One consistent RGB control interface over tested hardware backends — not an imaginary universal driver. RGB devices are controlled through OpenRGB; detection uses read-only Windows APIs."/>
+                    <Button Content="OpenRGB project website" Style="{StaticResource LinkButton}" Margin="0,12,0,0" HorizontalAlignment="Left"
+                            Command="{Binding OpenProjectSiteCommand}"/>
+                    <Rectangle Style="{StaticResource Divider}" Margin="0,16,0,14"/>
+                    <TextBlock Text="INSTALLATION" Style="{StaticResource Caption}" Margin="0,0,0,6"/>
+                    <TextBlock Text="{Binding InstallState}" Style="{StaticResource TextMuted}"/>
+                    <Button Content="Uninstall…" Style="{StaticResource DangerButton}" Margin="0,12,0,0" HorizontalAlignment="Left"
+                            Command="{Binding UninstallCommand}" Visibility="{Binding CanUninstall, Converter={StaticResource BoolToVis}}"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Grid>
+</UserControl>

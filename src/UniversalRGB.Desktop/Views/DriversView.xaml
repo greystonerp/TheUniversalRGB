@@ -1,0 +1,224 @@
+<UserControl x:Class="UniversalRGB.Desktop.Views.DriversView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <!-- Policy -->
+        <Border Background="{StaticResource AccentSoft}" BorderBrush="{StaticResource AccentLine}" BorderThickness="1" CornerRadius="14" Padding="18,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="&#xEA18;" Style="{StaticResource Icon}" FontSize="20" Foreground="{StaticResource Accent}" Margin="0,0,14,0" VerticalAlignment="Top"/>
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="Requirements install themselves — safely" Style="{StaticResource H3}"/>
+                    <TextBlock Style="{StaticResource Body}" FontSize="13" Margin="0,4,0,0"
+                               Text="OpenRGB is downloaded from its official release, checked against a pinned SHA-256, unpacked for your account (no admin rights) and started in the background. Kernel drivers such as PawnIO are also downloaded and signature-checked for you, but always ask before installing. Nothing disables driver signature enforcement or closes other programs."/>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Margin="16,0,0,0" VerticalAlignment="Top">
+                    <Button Style="{StaticResource PrimaryButton}" Command="{Binding InstallMissingCommand}" Margin="0,0,0,8"
+                            Visibility="{Binding HasMissing, Converter={StaticResource BoolToVis}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE896;" Style="{StaticResource Icon}" FontSize="13" Margin="0,0,8,0"/>
+                            <TextBlock Text="Install missing"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding RecheckCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE72C;" Style="{StaticResource Icon}" FontSize="13" Margin="0,0,8,0"/>
+                            <TextBlock Text="Re-check"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding RestartOpenRgbCommand}" Margin="0,8,0,0"
+                            ToolTip="Restart the background OpenRGB server (for example after closing other RGB software)"
+                            Visibility="{Binding Center.IsConnected, Converter={StaticResource BoolToVis}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE7E8;" Style="{StaticResource Icon}" FontSize="13" Margin="0,0,8,0"/>
+                            <TextBlock Text="Restart OpenRGB"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Margin="0,20,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.3*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Requirements -->
+            <Border Style="{StaticResource Card}" VerticalAlignment="Top">
+                <StackPanel>
+                    <TextBlock Text="Requirements" Style="{StaticResource H2}"/>
+                    <TextBlock Style="{StaticResource TextMuted}" Margin="0,3,0,12">
+                        <Run Text="OpenRGB:"/>
+                        <Run Text="{Binding OpenRgbPath, Mode=OneWay}" Foreground="{StaticResource Text2}"/>
+                        <Run Text="·"/>
+                        <Run Text="{Binding ServerText, Mode=OneWay}" Foreground="{StaticResource Text2}"/>
+                    </TextBlock>
+                    <ItemsControl ItemsSource="{Binding Requirements}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource SubCard}" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Title}" Style="{StaticResource H3}"/>
+                                            <ContentPresenter Grid.Column="1" Content="{Binding State}" ContentTemplate="{StaticResource StatusBadge}"/>
+                                        </Grid>
+                                        <TextBlock Text="{Binding Detail}" Style="{StaticResource TextMuted}" Margin="0,6,0,0"/>
+                                        <TextBlock Text="{Binding Hint}" Style="{StaticResource TextMuted}" Foreground="{StaticResource Text2}" Margin="0,4,0,0"
+                                                   Visibility="{Binding Hint, Converter={StaticResource NullToVis}}"/>
+                                        <WrapPanel Margin="0,10,0,0" Visibility="{Binding State, Converter={StaticResource EqVis}, ConverterParameter=Missing|Warning}">
+                                            <Button Style="{StaticResource PrimaryButton}" Height="30" FontSize="12" Margin="0,0,8,0"
+                                                    Command="{Binding DataContext.InstallMissingCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    Visibility="{Binding Id, Converter={StaticResource EqVis}, ConverterParameter=openrgb}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xE896;" Style="{StaticResource Icon}" FontSize="12" Margin="0,0,7,0"/>
+                                                    <TextBlock Text="Install OpenRGB"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Content="Locate existing copy…" Style="{StaticResource GhostButton}" Height="30" FontSize="12" Margin="0,0,8,0"
+                                                    Command="{Binding DataContext.LocateOpenRgbCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    Visibility="{Binding Id, Converter={StaticResource EqVis}, ConverterParameter=openrgb}"/>
+                                            <Button Content="Start OpenRGB server" Style="{StaticResource PrimaryButton}" Height="30" FontSize="12" Margin="0,0,8,0"
+                                                    Command="{Binding DataContext.StartServerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    Visibility="{Binding Id, Converter={StaticResource EqVis}, ConverterParameter=openrgb-sdk-server}"/>
+                                            <Button Style="{StaticResource PrimaryButton}" Height="30" FontSize="12" Margin="0,0,8,0"
+                                                    Command="{Binding DataContext.RunOpenRgbAsAdministratorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    Visibility="{Binding Id, Converter={StaticResource EqVis}, ConverterParameter=administrator}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xEA18;" Style="{StaticResource Icon}" FontSize="12" Margin="0,0,7,0"/>
+                                                    <TextBlock Text="Run OpenRGB as administrator"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Style="{StaticResource PrimaryButton}" Height="30" FontSize="12" Margin="0,0,8,0"
+                                                    Command="{Binding DataContext.InstallPackageByIdCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="pawnio"
+                                                    Visibility="{Binding Id, Converter={StaticResource EqVis}, ConverterParameter=pawnio}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xE896;" Style="{StaticResource Icon}" FontSize="12" Margin="0,0,7,0"/>
+                                                    <TextBlock Text="Install PawnIO…"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Content="Device Manager" Height="30" FontSize="12" Margin="0,0,8,0"
+                                                    Command="{Binding DataContext.OpenDeviceManagerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    Visibility="{Binding Id, Converter={StaticResource EqVis}, ConverterParameter=windows-drivers}"/>
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Grid.Column="2">
+                <!-- Packages -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Trusted packages" Style="{StaticResource H2}"/>
+                        <TextBlock Text="Curated official sources with pinned SHA-256 hashes. Universal RGB downloads and verifies them for you." Style="{StaticResource TextMuted}" Margin="0,3,0,12"/>
+                        <ItemsControl ItemsSource="{Binding Packages}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource SubCard}" Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <Grid>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Package.Name}" Style="{StaticResource H3}"/>
+                                                    <TextBlock Text="{Binding KindText}" Style="{StaticResource TextDim}" Margin="8,1,0,0"/>
+                                                </StackPanel>
+                                                <ContentPresenter Content="{Binding State}" ContentTemplate="{StaticResource StatusBadge}" HorizontalAlignment="Right"/>
+                                            </Grid>
+                                            <TextBlock Text="{Binding Package.Purpose}" Style="{StaticResource TextMuted}" Margin="0,6,0,0"/>
+                                            <TextBlock Text="{Binding SourceText}" Style="{StaticResource TextDim}" Margin="0,4,0,0"/>
+                                            <TextBlock Text="{Binding Package.Notes}" Style="{StaticResource TextDim}" Margin="0,2,0,0"/>
+                                            <WrapPanel Margin="0,10,0,0">
+                                                <Button Style="{StaticResource PrimaryButton}" Height="30" FontSize="12" Margin="0,0,8,0"
+                                                        Command="{Binding DataContext.InstallPackageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                        Visibility="{Binding CanDownload, Converter={StaticResource BoolToVis}}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="&#xE896;" Style="{StaticResource Icon}" FontSize="12" Margin="0,0,7,0"/>
+                                                        <TextBlock Text="{Binding InstallText}"/>
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button Height="30" FontSize="12" Margin="0,0,8,0"
+                                                        Command="{Binding DataContext.OpenPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="&#xE8A7;" Style="{StaticResource Icon}" FontSize="12" Margin="0,0,7,0"/>
+                                                        <TextBlock Text="Official page"/>
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button Content="Install from file…" Style="{StaticResource GhostButton}" Height="30" FontSize="12"
+                                                        Command="{Binding DataContext.VerifyAndInstallCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                                                        Visibility="{Binding CanVerifyFile, Converter={StaticResource BoolToVis}}"/>
+                                            </WrapPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content="Verify another installer…" Style="{StaticResource GhostButton}" HorizontalAlignment="Left"
+                                Command="{Binding VerifyAndInstallCommand}" CommandParameter="{x:Null}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Problem devices -->
+                <Border Style="{StaticResource Card}" Margin="0,20,0,0" Visibility="{Binding HasProblems, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <TextBlock Text="Windows driver problems" Style="{StaticResource H2}"/>
+                        <ItemsControl ItemsSource="{Binding ProblemDevices}" Margin="0,12,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,10">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"/>
+                                        <TextBlock Text="{Binding Problem}" Style="{StaticResource TextMuted}" Foreground="{StaticResource Amber}"/>
+                                        <TextBlock Text="{Binding HardwareId}" Style="{StaticResource Mono}" FontSize="11" Foreground="{StaticResource Dim}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- History -->
+                <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Installation history" Style="{StaticResource H2}"/>
+                        <TextBlock Text="Nothing has been installed through Universal RGB." Style="{StaticResource TextMuted}" Margin="0,8,0,0"
+                                   Visibility="{Binding HasHistory, Converter={StaticResource BoolToVis}, ConverterParameter=invert}"/>
+                        <ItemsControl ItemsSource="{Binding History}" Margin="0,12,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding PackageName}" FontWeight="SemiBold" FontSize="13"/>
+                                            <TextBlock Text="{Binding Notes}" Style="{StaticResource TextMuted}"/>
+                                            <TextBlock Style="{StaticResource TextDim}" FontSize="11">
+                                                <Run Text="{Binding Timestamp, StringFormat=g, Mode=OneWay}"/>
+                                                <Run Text="·"/>
+                                                <Run Text="{Binding Signer, Mode=OneWay, TargetNullValue=unsigned}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding Result}" Style="{StaticResource Mono}" VerticalAlignment="Top"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </StackPanel>
+</UserControl>

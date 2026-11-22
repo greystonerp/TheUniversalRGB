@@ -1,0 +1,13 @@
+﻿<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Version>0.6.0</Version>
+    <Company>Universal RGB Control</Company>
+    <Product>Universal RGB Control</Product>
+    <Copyright>Universal RGB Control</Copyright>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <AnalysisLevel>latest</AnalysisLevel>
+  </PropertyGroup>
+</Project>
