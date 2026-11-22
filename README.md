@@ -8,7 +8,7 @@ A standalone Windows app that detects RGB hardware, explains what is actually co
 
 Double-click **`dist\UniversalRGB-Setup.exe`**. That one file is the whole product, and it installs itself:
 
-1. A short setup screen installs Universal RGB for your Windows account to `%LOCALAPPDATA%\Programs\UniversalRGB`. No administrator rights are needed.
+1. A short setup screen asks whether Universal RGB should start with Windows (quietly in the tray, or as a window) and whether to add a desktop shortcut. It then installs for your Windows account to `%LOCALAPPDATA%\Programs\UniversalRGB`. No administrator rights are needed.
 2. It adds Start menu and desktop shortcuts and an entry in **Settings → Apps**.
 3. It opens the installed app. From then on, use the shortcuts.
 
@@ -56,7 +56,7 @@ You can also press **Install missing** on the Drivers page at any time.
 
 - **SMBus blocked.** RGB memory (for example Corsair Vengeance RGB `CMH…`) is hidden when OpenRGB runs without administrator rights, because it then can't open PawnIO. When the app sees RGB memory affected this way, it offers once to **Run OpenRGB as administrator**. Windows then asks each time OpenRGB starts, and the choice is remembered.
 - **Board lighting controller.** Each board is shown together with its own USB lighting controller (MSI Mystic Light `1462:7Cxx`, ASUS Aura, Gigabyte RGB Fusion 2, ASRock Polychrome). The app explains which of these happened:
-  - The controller's firmware is too old. A BIOS update fixes it.
+  - The controller's LED firmware is too old (for example MSI MPG B550 GAMING PLUS below firmware 6). Update it with MSI Center → Live Update → Advanced scan → LED Firmware; this is separate from the BIOS. Then restart and press **Restart OpenRGB**.
   - It didn't answer OpenRGB. MSI Center / Mystic Light is usually holding it: close it, then press **Restart OpenRGB**.
   - OpenRGB has no lighting layout for that board.
 

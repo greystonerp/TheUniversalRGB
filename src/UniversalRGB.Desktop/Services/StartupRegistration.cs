@@ -25,6 +25,13 @@ public static class StartupRegistration
         }
     }
 
+    /// <summary>Creates (or replaces) the startup entry for a specific executable (used by setup).</summary>
+    public static void Enable(string exe)
+    {
+        using var key = Registry.CurrentUser.CreateSubKey(RunKey, writable: true);
+        key.SetValue(ValueName, $"\"{exe}\" {StartupArgument}");
+    }
+
     public static void Set(bool enabled)
     {
         using var key = Registry.CurrentUser.CreateSubKey(RunKey, writable: true);

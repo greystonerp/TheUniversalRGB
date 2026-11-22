@@ -56,6 +56,11 @@ public sealed record DeviceEntry
 
     /// <summary>Suggested next step for the user, if any.</summary>
     public string? NextStep { get; init; }
+
+    /// <summary>Official page that explains the next step (e.g. the board maker's firmware guide).</summary>
+    public string? HelpUrl { get; init; }
+
+    public string? HelpLabel { get; init; }
     public RgbDevice? Controller { get; init; }
     public InventoryDevice? Inventory { get; init; }
     public CompatibilityRecord? Compatibility { get; init; }
@@ -115,7 +120,14 @@ public static class DeviceClassifier
 
         // 3. Previously seen controllers that are gone now.
         var present = controllers.Select(c => c.Id).ToHashSet(StringComparer.Ordinal);
-        foreach (var known in knownDevices.Where(k => !present.Contains(k.Key)))
+
+        // The same physical USB device seen under another id (older id scheme, changed device path) is not offline.
+        var presentHardware = controllers
+            .Where(c => c.Identity?.Key is not null)
+            .Select(c => $"{c.Name}|{c.Identity!.Key}")
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var known in knownDevices.Where(k => !present.Contains(k.Key) &&
+                     !(k.HardwareKey is not null && presentHardware.Contains($"{k.Name}|{k.HardwareKey}"))))
         {
             entries.Add(new DeviceEntry
             {
@@ -229,6 +241,7 @@ public static class DeviceClassifier
         DeviceStatus status;
         string detail;
         string? next = null;
+        string? helpUrl = null, helpLabel = null;
         if (!env.BackendConnected)
         {
             status = DeviceStatus.SetupRequired;
@@ -248,9 +261,13 @@ public static class DeviceClassifier
             }
             else if (issue == BoardControllerIssue.FirmwareTooOld)
             {
-                status = DeviceStatus.Unsupported;
-                detail = $"The board's lighting controller ({label}) runs firmware older than OpenRGB supports.";
-                next = "Update the BIOS from the board maker's support page (it also updates the lighting controller), then rescan.";
+                status = DeviceStatus.SetupRequired;
+                detail = $"The board's lighting controller ({label}) runs LED firmware older than OpenRGB supports, so the onboard lights " +
+                         "and the fans or strips on its RGB headers cannot be controlled yet.";
+                next = "Update the LED firmware with MSI Center → Live Update → Advanced scan → LED Firmware (separate from the BIOS). " +
+                       "Restart Windows, close MSI Center, then press Restart OpenRGB on the Drivers page and set the LED count for each header.";
+                helpUrl = "https://www.msi.com/faq/8638";
+                helpLabel = "MSI guide: updating the LED firmware";
             }
             else if (issue == BoardControllerIssue.NoResponse)
             {
@@ -299,6 +316,8 @@ public static class DeviceClassifier
             Status = status,
             StatusDetail = detail + (string.IsNullOrWhiteSpace(system.BoardVersion) ? "" : $" Revision: {system.BoardVersion}."),
             NextStep = next,
+            HelpUrl = helpUrl,
+            HelpLabel = helpLabel,
             Inventory = controller,
         });
     }

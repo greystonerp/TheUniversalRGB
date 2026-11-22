@@ -225,6 +225,14 @@ public sealed class AppDatabase
         var adapter = cmd.Parameters.Add("$adapter", SqliteType.Text);
         var hw = cmd.Parameters.Add("$hw", SqliteType.Text);
         cmd.Parameters.AddWithValue("$now", now);
+        // A USB/HID device seen again under a new id supersedes its old record (no "Offline" ghost).
+        using var supersede = c.CreateCommand();
+        supersede.Transaction = tx;
+        supersede.CommandText = "DELETE FROM known_devices WHERE key <> $key AND name = $name AND hardware_key = $hw;";
+        var sKey = supersede.Parameters.Add("$key", SqliteType.Text);
+        var sName = supersede.Parameters.Add("$name", SqliteType.Text);
+        var sHw = supersede.Parameters.Add("$hw", SqliteType.Text);
+
         foreach (var d in devices)
         {
             key.Value = d.Id;
@@ -233,6 +241,14 @@ public sealed class AppDatabase
             adapter.Value = d.AdapterName;
             hw.Value = (object?)d.Identity?.Key ?? DBNull.Value;
             cmd.ExecuteNonQuery();
+
+            if (d.Identity?.Key is { } hardwareKey)
+            {
+                sKey.Value = d.Id;
+                sName.Value = d.Name;
+                sHw.Value = hardwareKey;
+                supersede.ExecuteNonQuery();
+            }
         }
 
         tx.Commit();

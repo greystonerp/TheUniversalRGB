@@ -32,7 +32,8 @@ public sealed partial class SetupStep : ObservableObject
 
 /// <summary>
 /// Shown when the published EXE is launched before it is installed (or when it is newer than the installed copy).
-/// Installs automatically, then opens the installed app and closes itself.
+/// A first install asks how Universal RGB should start with Windows; updates run straight through.
+/// Afterwards the installed app is opened and setup closes itself.
 /// </summary>
 public partial class SetupWindow : Window
 {
@@ -50,34 +51,71 @@ public partial class SetupWindow : Window
         _log = log;
         _runPortable = runPortable;
 
-        var isUpdate = action == LaunchAction.Update;
         var version = SelfInstaller.CurrentVersion.ToString(3);
-        Subtitle.Text = isUpdate
-            ? $"Updating to version {version}…"
-            : $"Installing version {version} for {Environment.UserName}. No administrator rights needed.";
         Footer.Text = "Location: " + SelfInstaller.InstallDirectory;
         Footer.ToolTip = SelfInstaller.InstallDirectory;
+        StepList.ItemsSource = _steps;
 
+        if (action == LaunchAction.Update)
+        {
+            Subtitle.Text = $"Updating to version {version}…";
+            Loaded += async (_, _) => await RunAsync();
+        }
+        else
+        {
+            Subtitle.Text = $"Install version {version} for {Environment.UserName}. No administrator rights needed.";
+            OptionsFooter.Text = $"Installs to {SelfInstaller.InstallDirectory}. You can change these choices later in Settings.";
+            OptionsPanel.Visibility = Visibility.Visible;
+            ProgressPanel.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void BuildSteps()
+    {
+        var isUpdate = _action == LaunchAction.Update;
+        var startWithWindows = StartWithWindowsBox.IsChecked == true;
+        var startInTray = StartInTray.IsChecked == true;
+        var desktopShortcut = DesktopShortcutBox.IsChecked == true;
+
+        _steps.Clear();
         if (isUpdate || SelfInstaller.OtherCopyRunning())
         {
             _steps.Add(new SetupStep("Closing the copy that is already running", () => SelfInstaller.StopRunningCopies(_log)));
         }
 
         _steps.Add(new SetupStep(isUpdate ? "Updating program files" : "Copying Universal RGB", SelfInstaller.CopyFiles));
-        _steps.Add(new SetupStep(isUpdate ? "Refreshing shortcuts" : "Adding Start menu and desktop shortcuts", () => SelfInstaller.CreateShortcuts(isUpdate)));
+        _steps.Add(new SetupStep(
+            isUpdate ? "Refreshing shortcuts" : desktopShortcut ? "Adding Start menu and desktop shortcuts" : "Adding a Start menu shortcut",
+            () => SelfInstaller.CreateShortcuts(isUpdate, desktopShortcut)));
         _steps.Add(new SetupStep("Registering in Settings → Apps", SelfInstaller.Register));
-        _steps.Add(new SetupStep("Opening Universal RGB", () => SelfInstaller.LaunchInstalled(_args, justInstalled: !isUpdate)));
+        if (!isUpdate)
+        {
+            _steps.Add(new SetupStep(
+                startWithWindows ? (startInTray ? "Starting with Windows, in the tray" : "Starting with Windows, as a window") : "Not starting with Windows",
+                () => SelfInstaller.ApplyStartupChoice(startWithWindows, startInTray)));
+        }
 
-        StepList.ItemsSource = _steps;
+        _steps.Add(new SetupStep("Opening Universal RGB", () => SelfInstaller.LaunchInstalled(_args, justInstalled: !isUpdate)));
         Progress.Maximum = _steps.Count;
-        Loaded += async (_, _) => await RunAsync();
     }
 
     private async Task RunAsync()
     {
+        if (_steps.Count == 0)
+        {
+            BuildSteps();
+        }
+
+        OptionsPanel.Visibility = Visibility.Collapsed;
+        ProgressPanel.Visibility = Visibility.Visible;
         ErrorPanel.Visibility = Visibility.Collapsed;
         ErrorButtons.Visibility = Visibility.Collapsed;
         Progress.Value = 0;
+        if (_action != LaunchAction.Update)
+        {
+            Subtitle.Text = $"Installing version {SelfInstaller.CurrentVersion.ToString(3)}…";
+        }
+
         foreach (var step in _steps)
         {
             step.State = SetupStepState.Pending;
@@ -112,6 +150,21 @@ public partial class SetupWindow : Window
         Application.Current.Shutdown();
     }
 
+    private void OnStartupToggled(object sender, RoutedEventArgs e)
+    {
+        if (StartModePanel is not null)
+        {
+            StartModePanel.IsEnabled = StartWithWindowsBox.IsChecked == true;
+            StartModePanel.Opacity = StartModePanel.IsEnabled ? 1 : 0.45;
+        }
+    }
+
+    private async void OnInstall(object sender, RoutedEventArgs e)
+    {
+        BuildSteps();
+        await RunAsync();
+    }
+
     private async void OnRetry(object sender, RoutedEventArgs e) => await RunAsync();
 
     private void OnRunPortable(object sender, RoutedEventArgs e)
@@ -125,7 +178,7 @@ public partial class SetupWindow : Window
 
     private void OnDrag(object sender, MouseButtonEventArgs e)
     {
-        if (e.ButtonState == MouseButtonState.Pressed)
+        if (e.ButtonState == MouseButtonState.Pressed && e.OriginalSource is not System.Windows.Controls.Primitives.ButtonBase)
         {
             DragMove();
         }

@@ -144,11 +144,23 @@ public class MsiBoardClassificationTests
     }
 
     [Fact]
-    public void Old_mystic_light_firmware_points_to_a_bios_update()
+    public void Old_mystic_light_firmware_points_to_msis_led_firmware_update()
     {
         var board = Classify(new BackendFindings { MsiMysticLight = BoardControllerIssue.FirmwareTooOld }).Single(e => e.Category == "Motherboard");
-        Assert.Equal(DeviceStatus.Unsupported, board.Status);
-        Assert.Contains("BIOS", board.NextStep);
+        Assert.Equal(DeviceStatus.SetupRequired, board.Status);
+        Assert.Contains("fans", board.StatusDetail);
+        Assert.Contains("LED Firmware", board.NextStep);
+        Assert.StartsWith("https://www.msi.com/", board.HelpUrl);
+    }
+
+    [Fact]
+    public void A_device_seen_under_a_new_id_is_not_reported_offline()
+    {
+        var keyboard = TestData.Device(TestData.Keyboard());
+        var ghost = new UniversalRGB.Core.Storage.KnownDevice("openrgb:old-id-with-device-path", keyboard.Name, "Keyboard", "OpenRGB",
+            keyboard.Identity!.Key, DateTimeOffset.Now.AddHours(-1), DateTimeOffset.Now.AddHours(-1));
+        var entries = DeviceClassifier.Classify(null, [keyboard], new EnvironmentState { BackendConnected = true }, [ghost], _ => null);
+        Assert.DoesNotContain(entries, e => e.Status == DeviceStatus.Offline);
     }
 
     [Fact]

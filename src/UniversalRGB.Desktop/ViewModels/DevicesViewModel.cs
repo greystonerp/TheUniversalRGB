@@ -71,6 +71,15 @@ public sealed partial class DevicesViewModel : ObservableObject
     [RelayCommand]
     private static void OpenDeviceManager() => Shell.OpenDeviceManager();
 
+    [RelayCommand]
+    private void OpenHelp()
+    {
+        if (Selected?.HelpUrl is { } url)
+        {
+            Shell.Open(url);
+        }
+    }
+
     private void OnCenterChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(ControlCenter.Entries))

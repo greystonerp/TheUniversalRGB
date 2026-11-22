@@ -93,7 +93,17 @@
                             Visibility="{Binding Entry.NextStep, Converter={StaticResource NullToVis}}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE946;" Style="{StaticResource Icon}" Foreground="{StaticResource Accent}" Margin="0,0,10,0" VerticalAlignment="Top"/>
-                            <TextBlock Text="{Binding Entry.NextStep}" Style="{StaticResource Body}" FontSize="13" MaxWidth="380"/>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Entry.NextStep}" Style="{StaticResource Body}" FontSize="13" MaxWidth="380"/>
+                                <Button Style="{StaticResource LinkButton}" HorizontalAlignment="Left" Margin="0,8,0,0"
+                                        Command="{Binding DataContext.OpenHelpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        Visibility="{Binding Entry.HelpUrl, Converter={StaticResource NullToVis}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Entry.HelpLabel}" FontSize="13"/>
+                                        <TextBlock Text="&#xE8A7;" Style="{StaticResource Icon}" FontSize="11" Margin="6,0,0,0"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 

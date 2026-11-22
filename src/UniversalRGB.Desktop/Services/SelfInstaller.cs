@@ -192,14 +192,33 @@ public static class SelfInstaller
         }
     }
 
-    /// <summary>Start menu shortcut always; desktop shortcut on first install or when it already exists.</summary>
-    public static void CreateShortcuts(bool isUpdate)
+    /// <summary>Start menu shortcut always; desktop shortcut when chosen at install, or refreshed on update if it exists.</summary>
+    public static void CreateShortcuts(bool isUpdate, bool desktopShortcut = true)
     {
         ShellLink.Create(StartMenuShortcut, InstalledExe, "Control your PC's RGB lighting");
-        if (!isUpdate || File.Exists(DesktopShortcut))
+        if (isUpdate ? File.Exists(DesktopShortcut) : desktopShortcut)
         {
             ShellLink.Create(DesktopShortcut, InstalledExe, "Control your PC's RGB lighting");
         }
+    }
+
+    /// <summary>Applies the "start with Windows" choice made in setup (registry entry + saved app settings).</summary>
+    public static void ApplyStartupChoice(bool startWithWindows, bool startInTray)
+    {
+        if (startWithWindows)
+        {
+            StartupRegistration.Enable(InstalledExe);
+        }
+        else
+        {
+            StartupRegistration.Set(false);
+        }
+
+        var store = new Core.Storage.SettingsStore(Core.Storage.AppPaths.Default.SettingsFile);
+        var settings = store.Load();
+        settings.StartWithWindows = startWithWindows;
+        settings.StartMinimizedAtLogin = startInTray;
+        store.Save(settings);
     }
 
     /// <summary>Registers the app in Settings → Apps &amp; features (per user).</summary>

@@ -222,7 +222,10 @@ public sealed class OpenRgbAdapter : IRgbDeviceAdapter
 
     internal static string MakeId(OpenRgbControllerData data)
     {
-        var raw = $"{data.Name}|{data.Location}|{data.Serial}";
+        // USB/HID devices: the device path and serial can change between OpenRGB runs (e.g. after restarting it as
+        // administrator), so identify them by name + VID:PID. SMBus/I2C devices use their bus address, which is stable.
+        var key = HardwareIdParser.Parse(data.Location)?.Key;
+        var raw = key is not null ? $"{data.Name}|{key}" : $"{data.Name}|{data.Location}";
         var sb = new StringBuilder("openrgb:");
         foreach (var ch in raw)
         {
